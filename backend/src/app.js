@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import auth from "./middleware/auth";
 
 dotenv.config();
 
@@ -17,6 +18,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // importare routes
+app.use('api/auth', authRoutes)
 
 
 
