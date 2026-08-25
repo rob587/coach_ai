@@ -64,3 +64,40 @@ export const createProfile = async (req, res) => {
     res.status(500).json({ error: "Errore interno del server" });
   }
 };
+
+export const updateProfile = async (req, res) => {
+  const { peso, altezza, eta, bf_percentuale, obiettivo, livello } = req.body;
+
+  try {
+    const [existing] = await pool.query(
+      "SELECT id FROM profiles WHERE user_id = ?",
+      [req.user.id],
+    );
+
+    if (existing.length === 0) {
+      return res.status(404).json({ error: "Profilo non trovato" });
+    }
+
+    await pool.query(
+      `UPDATE profiles SET 
+        peso = COALESCE(?, peso),
+        altezza = COALESCE(?, altezza),
+        eta = COALESCE(?, eta),
+        bf_percentuale = COALESCE(?, bf_percentuale),
+        obiettivo = COALESCE(?, obiettivo),
+        livello = COALESCE(?, livello)
+      WHERE user_id = ?`,
+      [peso, altezza, eta, bf_percentuale, obiettivo, livello, req.user.id],
+    );
+
+    const [updated] = await pool.query(
+      "SELECT * FROM profiles WHERE user_id = ?",
+      [req.user.id],
+    );
+
+    res.json({ profile: updated[0] });
+  } catch (err) {
+    console.error("Errore updateProfile:", err);
+    res.status(500).json({ error: "Errore interno del server" });
+  }
+};
