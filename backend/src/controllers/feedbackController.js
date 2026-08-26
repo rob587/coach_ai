@@ -90,7 +90,7 @@ Genera un feedback settimanale dettagliato che includa:
 4. **Suggerimenti per la prossima settimana** — consigli pratici
 
 
-Sii diretto, tecnico ma anche motivante. Rispondi in italiano.`;
+Sii diretto e tecnico. Rispondi in italiano.`;
 
     const response = await groq.chat.completions.create({
       messages: [
