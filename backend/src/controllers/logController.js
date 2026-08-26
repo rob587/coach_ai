@@ -30,3 +30,66 @@ export const getLogs = async (req, res) => {
     res.status(500).json({ error: "Errore interno del server" });
   }
 };
+
+export const getLogsByEsercizio = async (req, res) => {
+  const { nome_esercizio } = req.params;
+  try {
+    const [logs] = await pool.query(
+      `SELECT * FROM esercizi_log 
+       WHERE user_id = ? AND nome_esercizio = ?
+       ORDER BY data ASC`,
+      [req.user.id, nome_esercizio],
+    );
+
+    res.json({ logs });
+  } catch (err) {
+    console.error("Errore getLogsByEsercizio:", err);
+    res.status(500).json({ error: "Errore interno del server" });
+  }
+};
+
+export const createLog = async (req, res) => {
+  const { sessione_id, data, nome_esercizio, serie, ripetizioni, peso, note } =
+    req.body;
+
+  if (
+    !sessione_id ||
+    !data ||
+    !nome_esercizio ||
+    !serie ||
+    !ripetizioni ||
+    !peso
+  ) {
+    return res
+      .status(400)
+      .json({ error: "Tutti i campi obbligatori mancanti" });
+  }
+
+  try {
+    const [result] = await pool.query(
+      `INSERT INTO esercizi_log 
+       (user_id, sessione_id, data, nome_esercizio, serie, ripetizioni, peso, note) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        req.user.id,
+        sessione_id,
+        data,
+        nome_esercizio,
+        serie,
+        ripetizioni,
+        peso,
+        note || null,
+      ],
+    );
+
+    const [newLog] = await pool.query(
+      "SELECT * FROM esercizi_log WHERE id = ?",
+      [result.insertId],
+    );
+
+    res.status(201).json({ log: newLog[0] });
+  } catch (err) {
+    console.error("Errore createLog:", err);
+    res.status(500).json({ error: "Errore interno del server" });
+  }
+};
