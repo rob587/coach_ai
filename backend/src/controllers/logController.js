@@ -154,3 +154,96 @@ export const deleteLog = async (req, res) => {
     res.status(500).json({ error: "Errore interno del server" });
   }
 };
+
+export const getSuggerimentoCarichi = async (req, res) => {
+  const { sessione_id } = req.params;
+
+  try {
+    // Prendo gli ultimi 4 log per ogni esercizio della sessione
+    const [logs] = await pool.query(
+      `SELECT nome_esercizio, serie, ripetizioni, peso, data
+       FROM esercizi_log
+       WHERE user_id = ? AND sessione_id = ?
+       ORDER BY data DESC
+       LIMIT 50`,
+      [req.user.id, sessione_id],
+    );
+
+    if (logs.length === 0) {
+      return res
+        .status(404)
+        .json({ error: "Nessun log trovato per questa sessione" });
+    }
+
+    // Raggruppo per esercizio
+    const eserciziMap = {};
+    logs.forEach((log) => {
+      if (!eserciziMap[log.nome_esercizio]) {
+        eserciziMap[log.nome_esercizio] = [];
+      }
+      eserciziMap[log.nome_esercizio].push(log);
+    });
+
+    // Prendo il profilo utente
+    const [profiles] = await pool.query(
+      "SELECT * FROM profiles WHERE user_id = ?",
+      [req.user.id],
+    );
+
+    const profile = profiles[0];
+
+    const esercizText = Object.entries(eserciziMap)
+      .map(([nome, entries]) => {
+        const ultimi = entries.slice(0, 4);
+        const storico = ultimi
+          .map(
+            (e) => `  - ${e.data}: ${e.serie}x${e.ripetizioni} @ ${e.peso}kg`,
+          )
+          .join("\n");
+        return `${nome}:\n${storico}`;
+      })
+      .join("\n\n");
+
+    const prompt = `Sei CoachAI, un coach di strength training esperto di progressive overload.
+
+Profilo atleta:
+- Livello: ${profile?.livello || "intermedio"}
+- Obiettivo: ${profile?.obiettivo || "massa"}
+- Peso corporeo: ${profile?.peso || "N/A"}kg
+
+Storico ultimi allenamenti per questa sessione:
+${esercizText}
+
+Analizza il progresso e suggerisci i carichi per la prossima sessione applicando il principio del progressive overload. Per ogni esercizio indica:
+- Peso consigliato
+- Serie e ripetizioni consigliate
+
+Sii diretto e tecnico. Rispondi in italiano.`;
+
+    const response = await groq.chat.completions.create({
+      messages: [
+        {
+          role: "system",
+          content:
+            "Sei un coach di strength training esperto. Dai consigli tecnici, diretti e basati sui dati. Parla sempre in italiano.",
+        },
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
+      model: "llama-3.3-70b-versatile",
+      temperature: 0.5,
+      max_tokens: 800,
+    });
+
+    const suggerimento = response.choices[0]?.message?.content || "";
+
+    res.json({ suggerimento });
+  } catch (err) {
+    console.error("Errore getSuggerimentoCarichi:", err);
+    res
+      .status(500)
+      .json({ error: "Errore nella generazione del suggerimento" });
+  }
+};
