@@ -93,3 +93,64 @@ export const createLog = async (req, res) => {
     res.status(500).json({ error: "Errore interno del server" });
   }
 };
+
+export const updateLog = async (req, res) => {
+  const { id } = req.params;
+  const { serie, ripetizioni, peso, note } = req.body;
+
+  try {
+    const [existing] = await pool.query(
+      "SELECT id FROM esercizi_log WHERE id = ? AND user_id = ?",
+      [id, req.user.id],
+    );
+
+    if (existing.length === 0) {
+      return res.status(404).json({ error: "Log non trovato" });
+    }
+
+    await pool.query(
+      `UPDATE esercizi_log SET
+        serie = COALESCE(?, serie),
+        ripetizioni = COALESCE(?, ripetizioni),
+        peso = COALESCE(?, peso),
+        note = COALESCE(?, note)
+      WHERE id = ? AND user_id = ?`,
+      [serie, ripetizioni, peso, note, id, req.user.id],
+    );
+
+    const [updated] = await pool.query(
+      "SELECT * FROM esercizi_log WHERE id = ?",
+      [id],
+    );
+
+    res.json({ log: updated[0] });
+  } catch (err) {
+    console.error("Errore updateLog:", err);
+    res.status(500).json({ error: "Errore interno del server" });
+  }
+};
+
+export const deleteLog = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const [existing] = await pool.query(
+      "SELECT id FROM esercizi_log WHERE id = ? AND user_id = ?",
+      [id, req.user.id],
+    );
+
+    if (existing.length === 0) {
+      return res.status(404).json({ error: "Log non trovato" });
+    }
+
+    await pool.query("DELETE FROM esercizi_log WHERE id = ? AND user_id = ?", [
+      id,
+      req.user.id,
+    ]);
+
+    res.json({ message: "Log eliminato con successo" });
+  } catch (err) {
+    console.error("Errore deleteLog:", err);
+    res.status(500).json({ error: "Errore interno del server" });
+  }
+};
