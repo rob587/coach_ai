@@ -1,7 +1,4 @@
 import mysql from "mysql2/promise";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
@@ -16,11 +13,11 @@ const pool = mysql.createPool({
 pool
   .getConnection()
   .then((conn) => {
-    console.log("Database connesso");
+    console.log("✅ Database connesso");
     conn.release();
   })
   .catch((err) => {
-    console.error("Errore connessione DB:", err.message);
+    console.error("❌ Errore connessione DB:", err.message);
   });
 
 export default pool;
