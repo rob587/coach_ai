@@ -4,8 +4,6 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-
 export const getLogs = async (req, res) => {
   try {
     let query = "SELECT * FROM esercizi_log WHERE user_id = ?";
@@ -36,8 +34,8 @@ export const getLogsByEsercizio = async (req, res) => {
   try {
     const [logs] = await pool.query(
       `SELECT * FROM esercizi_log 
-       WHERE user_id = ? AND nome_esercizio = ?
-       ORDER BY data ASC`,
+      WHERE user_id = ? AND nome_esercizio = ?
+      ORDER BY data ASC`,
       [req.user.id, nome_esercizio],
     );
 
@@ -68,8 +66,8 @@ export const createLog = async (req, res) => {
   try {
     const [result] = await pool.query(
       `INSERT INTO esercizi_log 
-       (user_id, sessione_id, data, nome_esercizio, serie, ripetizioni, peso, note) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      (user_id, sessione_id, data, nome_esercizio, serie, ripetizioni, peso, note) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         req.user.id,
         sessione_id,
@@ -110,10 +108,10 @@ export const updateLog = async (req, res) => {
 
     await pool.query(
       `UPDATE esercizi_log SET
-        serie = COALESCE(?, serie),
-        ripetizioni = COALESCE(?, ripetizioni),
-        peso = COALESCE(?, peso),
-        note = COALESCE(?, note)
+      serie = COALESCE(?, serie),
+      ripetizioni = COALESCE(?, ripetizioni),
+      peso = COALESCE(?, peso),
+      note = COALESCE(?, note)
       WHERE id = ? AND user_id = ?`,
       [serie, ripetizioni, peso, note, id, req.user.id],
     );
@@ -157,15 +155,16 @@ export const deleteLog = async (req, res) => {
 
 export const getSuggerimentoCarichi = async (req, res) => {
   const { sessione_id } = req.params;
+  const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
   try {
     // Prendo gli ultimi 4 log per ogni esercizio della sessione
     const [logs] = await pool.query(
       `SELECT nome_esercizio, serie, ripetizioni, peso, data
-       FROM esercizi_log
-       WHERE user_id = ? AND sessione_id = ?
-       ORDER BY data DESC
-       LIMIT 50`,
+      FROM esercizi_log
+      WHERE user_id = ? AND sessione_id = ?
+      ORDER BY data DESC
+      LIMIT 50`,
       [req.user.id, sessione_id],
     );
 

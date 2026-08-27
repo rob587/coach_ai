@@ -4,8 +4,6 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-
 export const getFeedback = async (req, res) => {
   try {
     const [feedback] = await pool.query(
@@ -20,6 +18,7 @@ export const getFeedback = async (req, res) => {
 };
 
 export const generateFeedback = async (req, res) => {
+  const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
   try {
     // Prendo i log della settimana corrente
     const oggi = new Date();
