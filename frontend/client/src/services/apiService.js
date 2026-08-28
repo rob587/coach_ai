@@ -100,3 +100,34 @@ export const deleteSessione = async (id) => {
   if (!res.ok) throw new Error(data.error || "Errore eliminazione sessione");
   return data;
 };
+
+export const getLogs = async (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  const res = await fetch(`${BASE_URL}/logs${query ? `?${query}` : ""}`, {
+    headers: getHeaders(),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Errore fetch logs");
+  return data;
+};
+
+export const getLogsByEsercizio = async (nome_esercizio) => {
+  const res = await fetch(
+    `${BASE_URL}/logs/esercizio/${encodeURIComponent(nome_esercizio)}`,
+    {
+      headers: getHeaders(),
+    },
+  );
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Errore fetch logs esercizio");
+  return data;
+};
+
+export const getSuggerimentoCarichi = async (sessione_id) => {
+  const res = await fetch(`${BASE_URL}/logs/suggerimento/${sessione_id}`, {
+    headers: getHeaders(),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Errore fetch suggerimento");
+  return data;
+};
