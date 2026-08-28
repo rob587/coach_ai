@@ -61,3 +61,42 @@ export const updateProfile = async (profileData) => {
   if (!res.ok) throw new Error(data.error || "Errore aggiornamento profilo");
   return data;
 };
+
+export const getSessioni = async () => {
+  const res = await fetch(`${BASE_URL}/sessioni`, { headers: getHeaders() });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Errore fetch sessioni");
+  return data;
+};
+
+export const createSessione = async (sessioneData) => {
+  const res = await fetch(`${BASE_URL}/sessioni`, {
+    method: "POST",
+    headers: getHeaders(),
+    body: JSON.stringify(sessioneData),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Errore creazione sessione");
+  return data;
+};
+
+export const updateSessione = async (id, sessioneData) => {
+  const res = await fetch(`${BASE_URL}/sessioni/${id}`, {
+    method: "PUT",
+    headers: getHeaders(),
+    body: JSON.stringify(sessioneData),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Errore aggiornamento sessione");
+  return data;
+};
+
+export const deleteSessione = async (id) => {
+  const res = await fetch(`${BASE_URL}/sessioni/${id}`, {
+    method: "DELETE",
+    headers: getHeaders(),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Errore eliminazione sessione");
+  return data;
+};
