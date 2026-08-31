@@ -85,7 +85,97 @@ const SessioneManager = ({ onSessioniChange }) => {
       </div>
     );
 
-  return <div>SessioneManager</div>;
+  return (
+    <div className="card">
+      <div className="card-header">
+        <h2>📅 Le tue Sessioni</h2>
+        <button className="btn-primary" onClick={() => setShowForm(!showForm)}>
+          {showForm ? "✕ Annulla" : "+ Nuova Sessione"}
+        </button>
+      </div>
+
+      {error && (
+        <div className="error-banner">
+          {error}
+          <button onClick={() => setError(null)}>✕</button>
+        </div>
+      )}
+
+      {showForm && (
+        <form onSubmit={handleCreate} className="inner-form">
+          <div className="form-row">
+            <div className="form-group">
+              <label>Nome sessione</label>
+              <input
+                type="text"
+                value={form.nome}
+                onChange={(e) => setForm({ ...form, nome: e.target.value })}
+                placeholder="es. Upper Push"
+                required
+                autoFocus
+              />
+            </div>
+            <div className="form-group">
+              <label>Giorno</label>
+              <select
+                value={form.giorno}
+                onChange={(e) => setForm({ ...form, giorno: e.target.value })}
+              >
+                {GIORNI.map((g) => (
+                  <option key={g.value} value={g.value}>
+                    {g.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label>Gruppi muscolari</label>
+            <input
+              type="text"
+              value={form.gruppi_muscolari}
+              onChange={(e) =>
+                setForm({ ...form, gruppi_muscolari: e.target.value })
+              }
+              placeholder="es. Petto, Spalle, Tricipiti"
+              required
+            />
+          </div>
+
+          <button type="submit" className="btn-primary" disabled={submitting}>
+            {submitting ? "Salvataggio..." : "Aggiungi Sessione"}
+          </button>
+        </form>
+      )}
+
+      {sessioni.length === 0 ? (
+        <div className="empty-state">
+          <p>📭 Nessuna sessione configurata.</p>
+          <p>Aggiungi le tue sessioni di allenamento!</p>
+        </div>
+      ) : (
+        <div className="sessioni-list">
+          {sessioni.map((s) => (
+            <div key={s.id} className="sessione-card">
+              <div className="sessione-info">
+                <span className="sessione-nome">{s.nome}</span>
+                <div className="sessione-meta">
+                  <span className="tag-giorno">
+                    {GIORNI.find((g) => g.value === s.giorno)?.label}
+                  </span>
+                  <span className="tag-muscoli">{s.gruppi_muscolari}</span>
+                </div>
+              </div>
+              <button onClick={() => handleDelete(s.id)} className="btn-delete">
+                🗑
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default SessioneManager;
