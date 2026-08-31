@@ -131,3 +131,35 @@ export const getSuggerimentoCarichi = async (sessione_id) => {
   if (!res.ok) throw new Error(data.error || "Errore fetch suggerimento");
   return data;
 };
+
+export const createLog = async (logData) => {
+  const res = await fetch(`${BASE_URL}/logs`, {
+    method: "POST",
+    headers: getHeaders(),
+    body: JSON.stringify(logData),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Errore creazione log");
+  return data;
+};
+
+export const updateLog = async (id, logData) => {
+  const res = await fetch(`${BASE_URL}/logs/${id}`, {
+    method: "PUT",
+    headers: getHeaders(),
+    body: JSON.stringify(logData),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Errore aggiornamento log");
+  return data;
+};
+
+export const deleteLog = async (id) => {
+  const res = await fetch(`${BASE_URL}/logs/${id}`, {
+    method: "DELETE",
+    headers: getHeaders(),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Errore eliminazione log");
+  return data;
+};
