@@ -57,7 +57,35 @@ const LogAllenamento = () => {
       loadLogs(sessioneSelezionata.id);
     }
   }, [sessioneSelezionata]);
-
+  const handleCreate = async (e) => {
+    e.preventDefault();
+    if (!sessioneSelezionata) return;
+    setSubmitting(true);
+    try {
+      const data = await createLog({
+        sessione_id: sessioneSelezionata.id,
+        data: oggi,
+        nome_esercizio: form.nome_esercizio,
+        serie: parseInt(form.serie),
+        ripetizioni: parseInt(form.ripetizioni),
+        peso: parseFloat(form.peso),
+        note: form.note || null,
+      });
+      setLogs([...logs, data.log]);
+      setForm({
+        nome_esercizio: "",
+        serie: "",
+        ripetizioni: "",
+        peso: "",
+        note: "",
+      });
+      setShowForm(false);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
   return <div>LogAllenamento</div>;
 };
 
