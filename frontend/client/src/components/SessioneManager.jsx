@@ -44,6 +44,47 @@ const SessioneManager = ({ onSessioniChange }) => {
     loadSessioni();
   }, []);
 
+  const handleCreate = async (e) => {
+    e.preventDefault();
+    if (!form.nome.trim() || !form.gruppi_muscolari.trim()) return;
+    setSubmitting(true);
+    try {
+      const data = await createSessione(form);
+      const updated = [...sessioni, data.sessione];
+      setSessioni(updated);
+      onSessioniChange?.(updated);
+      setForm({
+        nome: "",
+        giorno: "lunedi",
+        gruppi_muscolari: "",
+        ordine: 0,
+      });
+      setShowForm(false);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await deleteSessione(id);
+      const updated = sessioni.filter((s) => s.id !== id);
+      setSessioni(updated);
+      onSessioniChange?.(updated);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  if (loading)
+    return (
+      <div style={{ textAlign: "center", padding: "40px", color: "#6b7280" }}>
+        Caricamento sessioni...
+      </div>
+    );
+
   return <div>SessioneManager</div>;
 };
 
