@@ -57,6 +57,7 @@ const LogAllenamento = () => {
       loadLogs(sessioneSelezionata.id);
     }
   }, [sessioneSelezionata]);
+
   const handleCreate = async (e) => {
     e.preventDefault();
     if (!sessioneSelezionata) return;
@@ -85,6 +86,57 @@ const LogAllenamento = () => {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await deleteLog(id);
+      setLogs(logs.filter((l) => l.id !== id));
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleSuggerimento = async () => {
+    if (!sessioneSelezionata) return;
+    setLoadingSuggerimento(true);
+    setSuggerimento(null);
+    try {
+      const data = await getSuggerimentoCarichi(sessioneSelezionata.id);
+      setSuggerimento(data.suggerimento);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoadingSuggerimento(false);
+    }
+  };
+
+  const renderSuggerimento = (text) => {
+    return text.split("\n").map((line, i) => {
+      if (line.startsWith("**") && line.endsWith("**")) {
+        return (
+          <h3
+            key={i}
+            style={{
+              color: "#a78bfa",
+              marginTop: "12px",
+              marginBottom: "4px",
+            }}
+          >
+            {line.replace(/\*\*/g, "")}
+          </h3>
+        );
+      }
+      if (line.trim() === "") return <br key={i} />;
+      return (
+        <p
+          key={i}
+          style={{ margin: "3px 0", lineHeight: "1.6", fontSize: "0.9rem" }}
+        >
+          {line}
+        </p>
+      );
+    });
   };
   return <div>LogAllenamento</div>;
 };
