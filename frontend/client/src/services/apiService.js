@@ -163,3 +163,21 @@ export const deleteLog = async (id) => {
   if (!res.ok) throw new Error(data.error || "Errore eliminazione log");
   return data;
 };
+
+// section feedback
+export const getFeedback = async () => {
+  const res = await fetch(`${BASE_URL}/feedback`, { headers: getHeaders() });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Errore fetch feedback");
+  return data;
+};
+
+export const generateFeedback = async () => {
+  const res = await fetch(`${BASE_URL}/feedback/generate`, {
+    method: "POST",
+    headers: getHeaders(),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Errore generazione feedback");
+  return data;
+};
