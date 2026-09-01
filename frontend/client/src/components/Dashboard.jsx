@@ -53,6 +53,29 @@ const Dashboard = ({ profile }) => {
     }
   };
 
+  useEffect(() => {
+    loadRecentLogs();
+  }, []);
+
+  useEffect(() => {
+    if (esercizioSelezionato) {
+      loadChartData(esercizioSelezionato);
+    }
+  }, [esercizioSelezionato]);
+
+  const getBMI = () => {
+    if (!profile?.peso || !profile?.altezza) return null;
+    const altezzaM = profile.altezza / 100;
+    return (profile.peso / (altezzaM * altezzaM)).toFixed(1);
+  };
+
+  if (loading)
+    return (
+      <div style={{ textAlign: "center", padding: "40px", color: "#6b7280" }}>
+        Caricamento dashboard...
+      </div>
+    );
+
   return <div>Dashboard</div>;
 };
 
