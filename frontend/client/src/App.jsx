@@ -35,6 +35,39 @@ function App() {
   useEffect(() => {
     if (user) loadProfile();
   }, [user]);
+
+  const handleProfileComplete = (profileData) => {
+    setProfile(profileData);
+    setHasProfile(true);
+  };
+
+  if (loading || loadingProfile)
+    return (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "100vh",
+          color: "#6b7280",
+        }}
+      >
+        Caricamento...
+      </div>
+    );
+
+  if (!user) {
+    return showRegister ? (
+      <Register onSwitch={() => setShowRegister(false)} />
+    ) : (
+      <Login onSwitch={() => setShowRegister(true)} />
+    );
+  }
+
+  if (!hasProfile) {
+    return <ProfileSetup onComplete={handleProfileComplete} />;
+  }
+
   return <></>;
 }
 
