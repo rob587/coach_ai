@@ -115,50 +115,43 @@ const LogAllenamento = () => {
     return text.split("\n").map((line, i) => {
       if (line.startsWith("**") && line.endsWith("**")) {
         return (
-          <h3
-            key={i}
-            style={{
-              color: "#a78bfa",
-              marginTop: "12px",
-              marginBottom: "4px",
-            }}
-          >
+          <h3 key={i} className="text-violet-400 font-semibold mt-3 mb-1">
             {line.replace(/\*\*/g, "")}
           </h3>
         );
       }
       if (line.trim() === "") return <br key={i} />;
       return (
-        <p
-          key={i}
-          style={{ margin: "3px 0", lineHeight: "1.6", fontSize: "0.9rem" }}
-        >
+        <p key={i} className="text-gray-300 text-sm leading-relaxed">
           {line}
         </p>
       );
     });
   };
+
   if (loading)
     return (
-      <div style={{ textAlign: "center", padding: "40px", color: "#6b7280" }}>
+      <div className="flex items-center justify-center py-20 text-gray-500">
         Caricamento...
       </div>
     );
+
   return (
-    <div className="log-container">
+    <div className="max-w-3xl mx-auto space-y-4">
       {/* Selettore sessione */}
-      <div className="card" style={{ marginBottom: "20px" }}>
-        <h2 style={{ marginBottom: "16px" }}>🏋️ Log Allenamento — {oggi}</h2>
+      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+        <h2 className="text-lg font-semibold text-gray-100 mb-4">
+          🏋️ Log Allenamento —{" "}
+          <span className="text-gray-400 font-normal text-sm">{oggi}</span>
+        </h2>
 
         {sessioni.length === 0 ? (
-          <div className="empty-state">
+          <div className="text-center py-6 text-gray-500">
             <p>Nessuna sessione configurata.</p>
-            <p style={{ fontSize: "0.85rem" }}>
-              Vai nelle Impostazioni per aggiungere le tue sessioni.
-            </p>
+            <p className="text-sm mt-1">Vai in Sessioni per aggiungerne una.</p>
           </div>
         ) : (
-          <div className="sessioni-tabs">
+          <div className="flex flex-wrap gap-2">
             {sessioni.map((s) => (
               <button
                 key={s.id}
@@ -166,7 +159,11 @@ const LogAllenamento = () => {
                   setSessioneSelezionata(s);
                   setSuggerimento(null);
                 }}
-                className={`tab-btn ${sessioneSelezionata?.id === s.id ? "tab-active" : ""}`}
+                className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all ${
+                  sessioneSelezionata?.id === s.id
+                    ? "bg-violet-500/20 border-violet-500 text-violet-300"
+                    : "bg-gray-800 border-gray-700 text-gray-400 hover:border-gray-600"
+                }`}
               >
                 {s.nome}
               </button>
@@ -177,47 +174,50 @@ const LogAllenamento = () => {
 
       {sessioneSelezionata && (
         <>
-          {/* Header sessione */}
-          <div className="card" style={{ marginBottom: "20px" }}>
-            <div className="card-header">
+          {/* Header sessione + azioni */}
+          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+            <div className="flex items-start justify-between mb-4">
               <div>
-                <h3 style={{ color: "#a78bfa" }}>{sessioneSelezionata.nome}</h3>
-                <p
-                  style={{
-                    color: "#6b7280",
-                    fontSize: "0.85rem",
-                    marginTop: "4px",
-                  }}
-                >
+                <h3 className="text-violet-400 font-semibold text-lg">
+                  {sessioneSelezionata.nome}
+                </h3>
+                <p className="text-gray-500 text-sm mt-1">
                   {sessioneSelezionata.gruppi_muscolari}
                 </p>
               </div>
-              <div style={{ display: "flex", gap: "10px" }}>
+              <div className="flex gap-2">
                 <button
-                  className="btn-secondary"
                   onClick={handleSuggerimento}
                   disabled={loadingSuggerimento}
+                  className="bg-gray-800 hover:bg-gray-700 disabled:opacity-50 border border-gray-700 text-gray-300 text-sm px-3 py-2 rounded-lg transition-all"
                 >
                   {loadingSuggerimento ? "⏳ Analisi..." : "🤖 Suggerimento AI"}
                 </button>
                 <button
-                  className="btn-primary"
                   onClick={() => setShowForm(!showForm)}
+                  className="bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium px-3 py-2 rounded-lg transition-all"
                 >
                   {showForm ? "✕ Annulla" : "+ Esercizio"}
                 </button>
               </div>
             </div>
 
-            {/* Form aggiunta esercizio */}
+            {error && (
+              <div className="bg-red-900/30 border border-red-500/40 text-red-400 rounded-lg px-4 py-3 text-sm mb-4 flex justify-between">
+                {error}
+                <button onClick={() => setError(null)}>✕</button>
+              </div>
+            )}
+
             {showForm && (
               <form
                 onSubmit={handleCreate}
-                className="inner-form"
-                style={{ marginTop: "16px" }}
+                className="bg-gray-800/50 border border-gray-700 rounded-xl p-4 space-y-4"
               >
-                <div className="form-group">
-                  <label>Nome esercizio</label>
+                <div>
+                  <label className="block text-gray-400 text-sm mb-1">
+                    Nome esercizio
+                  </label>
                   <input
                     type="text"
                     value={form.nome_esercizio}
@@ -227,11 +227,14 @@ const LogAllenamento = () => {
                     placeholder="es. Panca Piana"
                     required
                     autoFocus
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-gray-100 text-sm focus:outline-none focus:border-violet-500"
                   />
                 </div>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Serie</label>
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-gray-400 text-sm mb-1">
+                      Serie
+                    </label>
                     <input
                       type="number"
                       value={form.serie}
@@ -241,10 +244,13 @@ const LogAllenamento = () => {
                       placeholder="es. 4"
                       min="1"
                       required
+                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-gray-100 text-sm focus:outline-none focus:border-violet-500"
                     />
                   </div>
-                  <div className="form-group">
-                    <label>Ripetizioni</label>
+                  <div>
+                    <label className="block text-gray-400 text-sm mb-1">
+                      Ripetizioni
+                    </label>
                     <input
                       type="number"
                       value={form.ripetizioni}
@@ -254,10 +260,13 @@ const LogAllenamento = () => {
                       placeholder="es. 8"
                       min="1"
                       required
+                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-gray-100 text-sm focus:outline-none focus:border-violet-500"
                     />
                   </div>
-                  <div className="form-group">
-                    <label>Peso (kg)</label>
+                  <div>
+                    <label className="block text-gray-400 text-sm mb-1">
+                      Peso (kg)
+                    </label>
                     <input
                       type="number"
                       value={form.peso}
@@ -268,22 +277,26 @@ const LogAllenamento = () => {
                       step="0.5"
                       min="0"
                       required
+                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-gray-100 text-sm focus:outline-none focus:border-violet-500"
                     />
                   </div>
                 </div>
-                <div className="form-group">
-                  <label>Note (opzionale)</label>
+                <div>
+                  <label className="block text-gray-400 text-sm mb-1">
+                    Note (opzionale)
+                  </label>
                   <input
                     type="text"
                     value={form.note}
                     onChange={(e) => setForm({ ...form, note: e.target.value })}
                     placeholder="es. RPE 8, buona forma"
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-gray-100 text-sm focus:outline-none focus:border-violet-500"
                   />
                 </div>
                 <button
                   type="submit"
-                  className="btn-primary"
                   disabled={submitting}
+                  className="bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white text-sm font-medium px-4 py-2 rounded-lg transition-all"
                 >
                   {submitting ? "Salvataggio..." : "Aggiungi Esercizio"}
                 </button>
@@ -293,58 +306,51 @@ const LogAllenamento = () => {
 
           {/* Suggerimento AI */}
           {suggerimento && (
-            <div className="card card-ai" style={{ marginBottom: "20px" }}>
-              <h3 style={{ color: "#a78bfa", marginBottom: "12px" }}>
+            <div className="bg-violet-950/30 border border-violet-500/30 rounded-2xl p-6">
+              <h3 className="text-violet-400 font-semibold mb-3">
                 🤖 Suggerimento Carichi
               </h3>
               <div>{renderSuggerimento(suggerimento)}</div>
             </div>
           )}
 
-          {/* Lista esercizi loggati */}
-          {error && (
-            <div className="error-banner">
-              {error}
-              <button onClick={() => setError(null)}>✕</button>
-            </div>
-          )}
-
-          <div className="card">
-            <h3 style={{ marginBottom: "16px" }}>
-              Esercizi di oggi
-              <span
-                style={{
-                  color: "#6b7280",
-                  fontSize: "0.85rem",
-                  fontWeight: "400",
-                  marginLeft: "8px",
-                }}
-              >
-                ({logs.length} esercizi)
+          {/* Lista esercizi */}
+          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+            <h3 className="font-semibold text-gray-100 mb-4">
+              Esercizi di oggi{" "}
+              <span className="text-gray-500 font-normal text-sm">
+                ({logs.length})
               </span>
             </h3>
 
             {logs.length === 0 ? (
-              <div className="empty-state">
+              <div className="text-center py-8 text-gray-500">
                 <p>🎯 Nessun esercizio loggato oggi.</p>
-                <p style={{ fontSize: "0.85rem" }}>
-                  Aggiungi il primo esercizio!
-                </p>
+                <p className="text-sm mt-1">Aggiungi il primo esercizio!</p>
               </div>
             ) : (
-              <div className="log-list">
+              <div className="space-y-3">
                 {logs.map((log) => (
-                  <div key={log.id} className="log-card">
-                    <div className="log-info">
-                      <span className="log-nome">{log.nome_esercizio}</span>
-                      <div className="log-meta">
-                        <span className="tag-serie">{log.serie} serie</span>
-                        <span className="tag-rep">{log.ripetizioni} rep</span>
-                        <span className="tag-peso">{log.peso} kg</span>
+                  <div
+                    key={log.id}
+                    className="flex items-center justify-between bg-gray-800/50 border border-gray-700 rounded-xl px-4 py-3"
+                  >
+                    <div>
+                      <span className="text-gray-100 font-medium">
+                        {log.nome_esercizio}
+                      </span>
+                      <div className="flex gap-2 mt-1 flex-wrap">
+                        <span className="bg-gray-700 text-gray-300 text-xs px-2 py-0.5 rounded-full">
+                          {log.serie} serie
+                        </span>
+                        <span className="bg-gray-700 text-gray-300 text-xs px-2 py-0.5 rounded-full">
+                          {log.ripetizioni} rep
+                        </span>
+                        <span className="bg-violet-500/20 text-violet-300 text-xs px-2 py-0.5 rounded-full font-medium">
+                          {log.peso} kg
+                        </span>
                         {log.note && (
-                          <span
-                            style={{ color: "#6b7280", fontSize: "0.78rem" }}
-                          >
+                          <span className="text-gray-500 text-xs">
                             — {log.note}
                           </span>
                         )}
@@ -352,7 +358,7 @@ const LogAllenamento = () => {
                     </div>
                     <button
                       onClick={() => handleDelete(log.id)}
-                      className="btn-delete"
+                      className="text-gray-600 hover:text-red-400 hover:bg-red-400/10 p-2 rounded-lg transition-all"
                     >
                       🗑
                     </button>
