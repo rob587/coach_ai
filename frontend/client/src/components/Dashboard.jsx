@@ -71,62 +71,54 @@ const Dashboard = ({ profile }) => {
 
   if (loading)
     return (
-      <div style={{ textAlign: "center", padding: "40px", color: "#6b7280" }}>
+      <div className="flex items-center justify-center py-20 text-gray-500">
         Caricamento dashboard...
       </div>
     );
 
   return (
-    <div className="dashboard-container">
-      <div className="stats-grid">
-        <div className="stat-card">
-          <span className="stat-label">Peso</span>
-          <span className="stat-value">{profile?.peso || "—"} kg</span>
-        </div>
-        <div className="stat-card">
-          <span className="stat-label">Altezza</span>
-          <span className="stat-value">{profile?.altezza || "—"} cm</span>
-        </div>
-        <div className="stat-card">
-          <span className="stat-label">BF%</span>
-          <span className="stat-value">{profile?.bf_percentuale || "—"}%</span>
-        </div>
-        <div className="stat-card">
-          <span className="stat-label">BMI</span>
-          <span className="stat-value">{getBMI() || "—"}</span>
-        </div>
-        <div className="stat-card">
-          <span className="stat-label">Obiettivo</span>
-          <span className="stat-value" style={{ textTransform: "capitalize" }}>
-            {profile?.obiettivo || "—"}
-          </span>
-        </div>
-        <div className="stat-card">
-          <span className="stat-label">Livello</span>
-          <span className="stat-value" style={{ textTransform: "capitalize" }}>
-            {profile?.livello || "—"}
-          </span>
-        </div>
+    <div className="max-w-4xl mx-auto space-y-4">
+      <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
+        {[
+          { label: "Peso", value: `${profile?.peso || "—"} kg` },
+          { label: "Altezza", value: `${profile?.altezza || "—"} cm` },
+          { label: "BF%", value: `${profile?.bf_percentuale || "—"}%` },
+          { label: "BMI", value: getBMI() || "—" },
+          { label: "Obiettivo", value: profile?.obiettivo || "—" },
+          { label: "Livello", value: profile?.livello || "—" },
+        ].map((stat) => (
+          <div
+            key={stat.label}
+            className="bg-gray-900 border border-gray-800 rounded-xl p-4 text-center"
+          >
+            <p className="text-gray-500 text-xs mb-1">{stat.label}</p>
+            <p className="text-gray-100 font-semibold text-sm capitalize">
+              {stat.value}
+            </p>
+          </div>
+        ))}
       </div>
 
-      <div className="card" style={{ marginBottom: "20px" }}>
-        <h2 style={{ marginBottom: "16px" }}>Progressi</h2>
+      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+        <h2 className="text-lg font-semibold text-gray-100 mb-4">Progressi</h2>
 
         {esercizi.length === 0 ? (
-          <div className="empty-state">
+          <div className="text-center py-10 text-gray-500">
             <p>Nessun dato ancora.</p>
-            <p style={{ fontSize: "0.85rem" }}>
-              Inizia a loggare i tuoi allenamenti!
-            </p>
+            <p className="text-sm mt-1">Inizia a loggare i tuoi allenamenti!</p>
           </div>
         ) : (
           <>
-            <div className="esercizi-tabs" style={{ marginBottom: "20px" }}>
+            <div className="flex flex-wrap gap-2 mb-6">
               {esercizi.map((e) => (
                 <button
                   key={e}
                   onClick={() => setEsercizioSelezionato(e)}
-                  className={`tab-btn ${esercizioSelezionato === e ? "tab-active" : ""}`}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-all ${
+                    esercizioSelezionato === e
+                      ? "bg-violet-500/20 border-violet-500 text-violet-300"
+                      : "bg-gray-800 border-gray-700 text-gray-400 hover:border-gray-600"
+                  }`}
                 >
                   {e}
                 </button>
@@ -134,17 +126,11 @@ const Dashboard = ({ profile }) => {
             </div>
 
             {loadingChart ? (
-              <div
-                style={{
-                  textAlign: "center",
-                  padding: "40px",
-                  color: "#6b7280",
-                }}
-              >
+              <div className="flex items-center justify-center py-10 text-gray-500">
                 Caricamento grafico...
               </div>
             ) : chartData.length < 2 ? (
-              <div className="empty-state">
+              <div className="text-center py-10 text-gray-500">
                 <p>Servono almeno 2 sessioni per vedere il grafico.</p>
               </div>
             ) : (
@@ -194,26 +180,37 @@ const Dashboard = ({ profile }) => {
         )}
       </div>
 
-      <div className="card">
-        <h2 style={{ marginBottom: "16px" }}>Ultimi allenamenti</h2>
+      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+        <h2 className="text-lg font-semibold text-gray-100 mb-4">
+          Ultimi allenamenti
+        </h2>
 
         {recentLogs.length === 0 ? (
-          <div className="empty-state">
+          <div className="text-center py-8 text-gray-500">
             <p>Nessun allenamento registrato ancora.</p>
           </div>
         ) : (
-          <div className="log-list">
+          <div className="space-y-3">
             {recentLogs.map((log) => (
-              <div key={log.id} className="log-card">
-                <div className="log-info">
-                  <span className="log-nome">{log.nome_esercizio}</span>
-                  <div className="log-meta">
-                    <span className="tag-serie">{log.serie} serie</span>
-                    <span className="tag-rep">{log.ripetizioni} rep</span>
-                    <span className="tag-peso">{log.peso} kg</span>
-                    <span style={{ color: "#4b5563", fontSize: "0.78rem" }}>
-                      {log.data}
+              <div
+                key={log.id}
+                className="flex items-center justify-between bg-gray-800/50 border border-gray-700 rounded-xl px-4 py-3"
+              >
+                <div>
+                  <span className="text-gray-100 font-medium">
+                    {log.nome_esercizio}
+                  </span>
+                  <div className="flex gap-2 mt-1 flex-wrap">
+                    <span className="bg-gray-700 text-gray-300 text-xs px-2 py-0.5 rounded-full">
+                      {log.serie} serie
                     </span>
+                    <span className="bg-gray-700 text-gray-300 text-xs px-2 py-0.5 rounded-full">
+                      {log.ripetizioni} rep
+                    </span>
+                    <span className="bg-violet-500/20 text-violet-300 text-xs px-2 py-0.5 rounded-full font-medium">
+                      {log.peso} kg
+                    </span>
+                    <span className="text-gray-500 text-xs">{log.data}</span>
                   </div>
                 </div>
               </div>
