@@ -27,18 +27,30 @@ const Login = ({ onSwitch }) => {
   };
   return (
     <>
-      <div className="auth-container">
-        <div className="auth-card">
-          <div className="auth-header">
-            <h1>DailyBrief</h1>
-            <p>Accedi al tuo account</p>
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center p-6">
+        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 w-full max-w-md">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-violet-400 mb-2">
+              🏋️ CoachAI
+            </h1>
+            <p className="text-gray-500 text-sm">Accedi al tuo account</p>
           </div>
 
-          {error && <div className="error-banner">{error}</div>}
+          {error && (
+            <div className="bg-red-900/30 border border-red-500/40 text-red-400 rounded-lg px-4 py-3 text-sm mb-6 flex justify-between items-center">
+              {error}
+              <button
+                onClick={() => setError(null)}
+                className="ml-2 hover:text-red-300"
+              >
+                ✕
+              </button>
+            </div>
+          )}
 
-          <form onSubmit={handleSubmit} className="auth-form">
-            <div className="form-group">
-              <label>Email</label>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-gray-400 text-sm mb-1">Email</label>
               <input
                 type="email"
                 name="email"
@@ -46,11 +58,14 @@ const Login = ({ onSwitch }) => {
                 onChange={handleChange}
                 placeholder="la@tua.email"
                 required
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-gray-100 text-sm focus:outline-none focus:border-violet-500"
               />
             </div>
 
-            <div className="form-group">
-              <label>Password</label>
+            <div>
+              <label className="block text-gray-400 text-sm mb-1">
+                Password
+              </label>
               <input
                 type="password"
                 name="password"
@@ -58,16 +73,27 @@ const Login = ({ onSwitch }) => {
                 onChange={handleChange}
                 placeholder="••••••••"
                 required
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-gray-100 text-sm focus:outline-none focus:border-violet-500"
               />
             </div>
 
-            <button type="submit" className="btn-primary" disabled={loading}>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-violet-600 hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg transition-all mt-2"
+            >
               {loading ? "Accesso in corso..." : "Accedi"}
             </button>
           </form>
 
-          <p className="auth-switch">
-            Non hai un account? <span onClick={onSwitch}>Registrati</span>
+          <p className="text-center text-gray-500 text-sm mt-6">
+            Non hai un account?{" "}
+            <span
+              onClick={onSwitch}
+              className="text-violet-400 cursor-pointer hover:underline font-medium"
+            >
+              Registrati
+            </span>
           </p>
         </div>
       </div>
