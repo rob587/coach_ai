@@ -80,100 +80,131 @@ const SessioneManager = ({ onSessioniChange }) => {
 
   if (loading)
     return (
-      <div style={{ textAlign: "center", padding: "40px", color: "#6b7280" }}>
+      <div className="flex items-center justify-center py-20 text-gray-500">
         Caricamento sessioni...
       </div>
     );
 
   return (
-    <div className="card">
-      <div className="card-header">
-        <h2>📅 Le tue Sessioni</h2>
-        <button className="btn-primary" onClick={() => setShowForm(!showForm)}>
-          {showForm ? "✕ Annulla" : "+ Nuova Sessione"}
-        </button>
-      </div>
-
-      {error && (
-        <div className="error-banner">
-          {error}
-          <button onClick={() => setError(null)}>✕</button>
+    <div className="max-w-2xl mx-auto space-y-4">
+      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-lg font-semibold text-gray-100">
+            📅 Le tue Sessioni
+          </h2>
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-all"
+          >
+            {showForm ? "✕ Annulla" : "+ Nuova Sessione"}
+          </button>
         </div>
-      )}
 
-      {showForm && (
-        <form onSubmit={handleCreate} className="inner-form">
-          <div className="form-row">
-            <div className="form-group">
-              <label>Nome sessione</label>
+        {error && (
+          <div className="bg-red-900/30 border border-red-500/40 text-red-400 rounded-lg px-4 py-3 text-sm mb-4 flex justify-between">
+            {error}
+            <button onClick={() => setError(null)}>✕</button>
+          </div>
+        )}
+
+        {showForm && (
+          <form
+            onSubmit={handleCreate}
+            className="bg-gray-800/50 border border-gray-700 rounded-xl p-4 mb-4 space-y-4"
+          >
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-gray-400 text-sm mb-1">
+                  Nome sessione
+                </label>
+                <input
+                  type="text"
+                  value={form.nome}
+                  onChange={(e) => setForm({ ...form, nome: e.target.value })}
+                  placeholder="es. Upper Push"
+                  required
+                  autoFocus
+                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-gray-100 text-sm focus:outline-none focus:border-violet-500"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-400 text-sm mb-1">
+                  Giorno
+                </label>
+                <select
+                  value={form.giorno}
+                  onChange={(e) => setForm({ ...form, giorno: e.target.value })}
+                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-gray-100 text-sm focus:outline-none focus:border-violet-500"
+                >
+                  {GIORNI.map((g) => (
+                    <option key={g.value} value={g.value}>
+                      {g.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-gray-400 text-sm mb-1">
+                Gruppi muscolari
+              </label>
               <input
                 type="text"
-                value={form.nome}
-                onChange={(e) => setForm({ ...form, nome: e.target.value })}
-                placeholder="es. Upper Push"
+                value={form.gruppi_muscolari}
+                onChange={(e) =>
+                  setForm({ ...form, gruppi_muscolari: e.target.value })
+                }
+                placeholder="es. Petto, Spalle, Tricipiti"
                 required
-                autoFocus
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-gray-100 text-sm focus:outline-none focus:border-violet-500"
               />
             </div>
-            <div className="form-group">
-              <label>Giorno</label>
-              <select
-                value={form.giorno}
-                onChange={(e) => setForm({ ...form, giorno: e.target.value })}
+
+            <button
+              type="submit"
+              disabled={submitting}
+              className="bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white text-sm font-medium px-4 py-2 rounded-lg transition-all"
+            >
+              {submitting ? "Salvataggio..." : "Aggiungi Sessione"}
+            </button>
+          </form>
+        )}
+
+        {sessioni.length === 0 ? (
+          <div className="text-center py-10 text-gray-500">
+            <p className="text-lg mb-1">📭 Nessuna sessione configurata.</p>
+            <p className="text-sm">Aggiungi le tue sessioni di allenamento!</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {sessioni.map((s) => (
+              <div
+                key={s.id}
+                className="flex items-center justify-between bg-gray-800/50 border border-gray-700 rounded-xl px-4 py-3"
               >
-                {GIORNI.map((g) => (
-                  <option key={g.value} value={g.value}>
-                    {g.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label>Gruppi muscolari</label>
-            <input
-              type="text"
-              value={form.gruppi_muscolari}
-              onChange={(e) =>
-                setForm({ ...form, gruppi_muscolari: e.target.value })
-              }
-              placeholder="es. Petto, Spalle, Tricipiti"
-              required
-            />
-          </div>
-
-          <button type="submit" className="btn-primary" disabled={submitting}>
-            {submitting ? "Salvataggio..." : "Aggiungi Sessione"}
-          </button>
-        </form>
-      )}
-
-      {sessioni.length === 0 ? (
-        <div className="empty-state">
-          <p>📭 Nessuna sessione configurata.</p>
-          <p>Aggiungi le tue sessioni di allenamento!</p>
-        </div>
-      ) : (
-        <div className="sessioni-list">
-          {sessioni.map((s) => (
-            <div key={s.id} className="sessione-card">
-              <div className="sessione-info">
-                <span className="sessione-nome">{s.nome}</span>
-                <div className="sessione-meta">
-                  <span className="tag-giorno">
-                    {GIORNI.find((g) => g.value === s.giorno)?.label}
-                  </span>
-                  <span className="tag-muscoli">{s.gruppi_muscolari}</span>
+                <div>
+                  <span className="text-gray-100 font-medium">{s.nome}</span>
+                  <div className="flex gap-2 mt-1">
+                    <span className="bg-violet-500/20 text-violet-300 text-xs px-2 py-0.5 rounded-full">
+                      {GIORNI.find((g) => g.value === s.giorno)?.label}
+                    </span>
+                    <span className="bg-gray-700 text-gray-400 text-xs px-2 py-0.5 rounded-full">
+                      {s.gruppi_muscolari}
+                    </span>
+                  </div>
                 </div>
+                <button
+                  onClick={() => handleDelete(s.id)}
+                  className="text-gray-600 hover:text-red-400 hover:bg-red-400/10 p-2 rounded-lg transition-all"
+                >
+                  🗑
+                </button>
               </div>
-              <button onClick={() => handleDelete(s.id)} className="btn-delete">
-                🗑
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
