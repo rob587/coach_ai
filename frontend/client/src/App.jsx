@@ -33,8 +33,14 @@ function AppContent() {
   };
 
   useEffect(() => {
-    if (user) loadProfile();
-  }, [user]);
+    if (!loading) {
+      if (user) {
+        loadProfile();
+      } else {
+        setLoadingProfile(false);
+      }
+    }
+  }, [user, loading]);
 
   const handleProfileComplete = (profileData) => {
     setProfile(profileData);
@@ -77,38 +83,53 @@ function AppContent() {
 
   return (
     <>
-      <div className="app-container">
-        <header className="app-header">
-          <div className="header-left">
-            <h1>🏋️ CoachAI</h1>
-            <span className="header-subtitle">Ciao, {user.username}! 💪</span>
+      <div className="min-h-screen bg-gray-950 flex flex-col">
+        <header className="bg-gray-900 border-b border-gray-800 px-6 py-4 sticky top-0 z-50">
+          <div className="max-w-5xl mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <h1 className="text-xl font-bold text-violet-400">🏋️ CoachAI</h1>
+              <span className="text-gray-500 text-sm">
+                Ciao, {user.username}! 💪
+              </span>
+            </div>
+            <button
+              onClick={logout}
+              className="text-gray-500 hover:text-red-400 border border-gray-700 hover:border-red-400/50 text-sm px-3 py-1.5 rounded-lg transition-all"
+            >
+              Esci
+            </button>
           </div>
-          <button className="btn-logout" onClick={logout}>
-            Esci
-          </button>
         </header>
 
-        <nav className="app-nav">
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              className={`nav-tab ${activeTab === tab.id ? "nav-tab-active" : ""}`}
-              onClick={() => setActiveTab(tab.id)}
-            >
-              {tab.label}
-            </button>
-          ))}
+        <nav className="bg-gray-900 border-b border-gray-800 px-6">
+          <div className="max-w-5xl mx-auto flex gap-1">
+            {TABS.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-4 py-3 text-sm font-medium border-b-2 transition-all ${
+                  activeTab === tab.id
+                    ? "border-violet-500 text-violet-400"
+                    : "border-transparent text-gray-500 hover:text-gray-300"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </nav>
 
-        <main className="app-main">
-          {activeTab === "dashboard" && <Dashboard profile={profile} />}
-          {activeTab === "log" && <LogAllenamento />}
-          {activeTab === "sessioni" && <SessioneManager />}
-          {activeTab === "feedback" && <FeedbackAI />}
+        <main className="flex-1 p-6">
+          <div className="max-w-5xl mx-auto">
+            {activeTab === "dashboard" && <Dashboard profile={profile} />}
+            {activeTab === "log" && <LogAllenamento />}
+            {activeTab === "sessioni" && <SessioneManager />}
+            {activeTab === "feedback" && <FeedbackAI />}
+          </div>
         </main>
 
-        <footer className="app-footer">
-          <p>CoachAI — Il tuo coach personale AI</p>
+        <footer className="border-t border-gray-800 py-4 text-center text-gray-600 text-sm">
+          CoachAI — Il tuo coach personale AI
         </footer>
       </div>
     </>

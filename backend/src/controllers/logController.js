@@ -5,6 +5,8 @@ import dotenv from "dotenv";
 dotenv.config();
 
 export const getLogs = async (req, res) => {
+  const { sessione_id, data } = req.query;
+
   try {
     let query = "SELECT * FROM esercizi_log WHERE user_id = ?";
     const params = [req.user.id];
