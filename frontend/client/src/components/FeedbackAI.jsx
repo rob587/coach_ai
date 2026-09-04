@@ -57,14 +57,7 @@ const FeedbackAI = () => {
     return text.split("\n").map((line, i) => {
       if (line.startsWith("**") && line.endsWith("**")) {
         return (
-          <h3
-            key={i}
-            style={{
-              color: "#a78bfa",
-              marginTop: "16px",
-              marginBottom: "6px",
-            }}
-          >
+          <h3 key={i} className="text-violet-400 font-semibold mt-4 mb-2">
             {line.replace(/\*\*/g, "")}
           </h3>
         );
@@ -73,6 +66,7 @@ const FeedbackAI = () => {
         return (
           <p
             key={i}
+            className="text-gray-300 text-sm leading-relaxed"
             dangerouslySetInnerHTML={{
               __html: line.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>"),
             }}
@@ -81,10 +75,7 @@ const FeedbackAI = () => {
       }
       if (line.trim() === "") return <br key={i} />;
       return (
-        <p
-          key={i}
-          style={{ margin: "4px 0", lineHeight: "1.7", fontSize: "0.92rem" }}
-        >
+        <p key={i} className="text-gray-300 text-sm leading-relaxed">
           {line}
         </p>
       );
@@ -93,36 +84,32 @@ const FeedbackAI = () => {
 
   if (loading)
     return (
-      <div style={{ textAlign: "center", padding: "40px", color: "#6b7280" }}>
+      <div className="flex items-center justify-center py-20 text-gray-500">
         Caricamento feedback...
       </div>
     );
 
   return (
-    <div className="feedback-container">
-      <div className="card" style={{ marginBottom: "20px" }}>
-        <div className="card-header">
+    <div className="max-w-3xl mx-auto space-y-4">
+      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+        <div className="flex items-start justify-between">
           <div>
-            <h2>Feedback Settimanale AI</h2>
-            <p
-              style={{
-                color: "#6b7280",
-                fontSize: "0.85rem",
-                marginTop: "4px",
-              }}
-            >
+            <h2 className="text-lg font-semibold text-gray-100">
+              Feedback Settimanale AI
+            </h2>
+            <p className="text-gray-500 text-sm mt-1">
               Analisi dei tuoi allenamenti della settimana
             </p>
           </div>
           <button
-            className="btn-primary"
             onClick={handleGenerate}
             disabled={generating}
+            className="bg-violet-600 hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium px-4 py-2 rounded-lg transition-all flex items-center gap-2"
           >
             {generating ? (
               <>
-                <span className="spinner-inline" />
-                Analisi in corso...
+                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Analisi...
               </>
             ) : (
               "✨ Genera Feedback"
@@ -131,7 +118,7 @@ const FeedbackAI = () => {
         </div>
 
         {error && (
-          <div className="error-banner" style={{ marginTop: "16px" }}>
+          <div className="bg-red-900/30 border border-red-500/40 text-red-400 rounded-lg px-4 py-3 text-sm mt-4 flex justify-between">
             {error}
             <button onClick={() => setError(null)}>✕</button>
           </div>
@@ -139,70 +126,44 @@ const FeedbackAI = () => {
       </div>
 
       {feedbacks.length === 0 ? (
-        <div className="card">
-          <div className="empty-state">
-            <p>Nessun feedback ancora.</p>
-            <p style={{ fontSize: "0.85rem" }}>
-              Allena ti questa settimana e genera il tuo primo feedback!
+        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+          <div className="text-center py-8 text-gray-500">
+            <p className="text-lg mb-1">Nessun feedback ancora.</p>
+            <p className="text-sm">
+              Allenati questa settimana e genera il tuo primo feedback!
             </p>
           </div>
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+        <div className="space-y-3">
           {feedbacks.map((f, index) => (
             <div
               key={f.id}
-              className="card"
               onClick={() => setExpanded(expanded === index ? null : index)}
-              style={{ cursor: "pointer" }}
+              className="bg-gray-900 border border-gray-800 hover:border-gray-700 rounded-2xl p-6 cursor-pointer transition-all"
             >
-              <div className="card-header">
+              <div className="flex items-start justify-between">
                 <div>
-                  <p
-                    style={{
-                      color: "#f3f4f6",
-                      fontWeight: "600",
-                      fontSize: "0.95rem",
-                    }}
-                  >
+                  <p className="text-gray-100 font-semibold">
                     Settimana {formatWeek(f.settimana)}
                   </p>
-                  <p
-                    style={{
-                      color: "#4b5563",
-                      fontSize: "0.78rem",
-                      marginTop: "4px",
-                    }}
-                  >
+                  <p className="text-gray-500 text-xs mt-1">
                     Generato il {formatDate(f.created_at)}
                   </p>
                 </div>
-                <span style={{ color: "#4b5563" }}>
+                <span className="text-gray-500 text-sm">
                   {expanded === index ? "▲" : "▼"}
                 </span>
               </div>
 
               {expanded !== index && (
-                <p
-                  style={{
-                    color: "#6b7280",
-                    fontSize: "0.85rem",
-                    marginTop: "10px",
-                    lineHeight: "1.6",
-                  }}
-                >
+                <p className="text-gray-500 text-sm mt-3 leading-relaxed">
                   {f.contenuto.replace(/\*\*/g, "").slice(0, 150)}...
                 </p>
               )}
 
               {expanded === index && (
-                <div
-                  style={{
-                    marginTop: "16px",
-                    paddingTop: "16px",
-                    borderTop: "1px solid rgba(255,255,255,0.07)",
-                  }}
-                >
+                <div className="mt-4 pt-4 border-t border-gray-800">
                   {renderContent(f.contenuto)}
                 </div>
               )}
