@@ -210,12 +210,28 @@ export const getSuggerimentoCarichi = async (req, res) => {
 
     const esercizText = Object.entries(eserciziMap)
       .map(([nome, entries]) => {
-        const ultimi = entries.slice(0, 4);
-        const storico = ultimi
-          .map(
-            (e) => `  - ${e.data}: ${e.serie}x${e.ripetizioni} @ ${e.peso}kg`,
-          )
+        // Raggruppo per data
+        const perData = {};
+        entries.forEach((e) => {
+          if (!perData[e.data]) perData[e.data] = [];
+          perData[e.data].push(e);
+        });
+
+        // Prendo le ultime 4 sessioni
+        const ultime = Object.entries(perData)
+          .sort(([a], [b]) => new Date(b) - new Date(a))
+          .slice(0, 4);
+
+        const storico = ultime
+          .map(([data, serie]) => {
+            const serieText = serie
+              .sort((a, b) => a.serie - b.serie)
+              .map((s) => `${s.ripetizioni}x${s.peso}kg`)
+              .join(", ");
+            return `  - ${data}: ${serieText}`;
+          })
           .join("\n");
+
         return `${nome}:\n${storico}`;
       })
       .join("\n\n");
@@ -226,16 +242,20 @@ Profilo atleta:
 - Livello: ${profile?.livello || "intermedio"}
 - Obiettivo: ${profile?.obiettivo || "massa"}
 - Peso corporeo: ${profile?.peso || "N/A"}kg
+- Preferenza serie: 2-3 serie per esercizio (NON superare mai 3 serie)
 
 Storico ultimi allenamenti per questa sessione:
 ${esercizText}
 
-Analizza il progresso e suggerisci i carichi per la prossima sessione applicando il principio del progressive overload. Per ogni esercizio indica:
-- Peso consigliato
-- Serie e ripetizioni consigliate
+Basandoti ESCLUSIVAMENTE sui dati storici sopra, suggerisci i carichi per la prossima sessione applicando il progressive overload.
 
-Sii diretto e tecnico. Rispondi in italiano.`;
-
+REGOLE RIGIDE:
+- Massimo 3 serie per esercizio, mai di più
+- Mantieni lo stesso numero di serie che l'atleta ha già fatto
+- Aumenta solo il peso o le ripetizioni rispetto all'ultima sessione
+- Rispondi SOLO con una tabella markdown: Esercizio | Peso consigliato | Serie | Ripetizioni
+- Nessun testo aggiuntivo prima o dopo la tabella
+- Nessuna nota, nessun consiglio extra`;
     const response = await groq.chat.completions.create({
       messages: [
         {
@@ -250,7 +270,7 @@ Sii diretto e tecnico. Rispondi in italiano.`;
       ],
       model: "openai/gpt-oss-20b",
       temperature: 0.5,
-      max_tokens: 800,
+      max_tokens: 2000,
     });
 
     const suggerimento = response.choices[0]?.message?.content || "";
