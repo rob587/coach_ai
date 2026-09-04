@@ -49,45 +49,60 @@ export const getLogsByEsercizio = async (req, res) => {
 };
 
 export const createLog = async (req, res) => {
-  const { sessione_id, data, nome_esercizio, serie, ripetizioni, peso, note } =
-    req.body;
+  const { sessione_id, data, nome_esercizio, serie_input, note } = req.body;
 
-  if (
-    !sessione_id ||
-    !data ||
-    !nome_esercizio ||
-    !serie ||
-    !ripetizioni ||
-    !peso
-  ) {
+  if (!sessione_id || !data || !nome_esercizio || !serie_input) {
     return res
       .status(400)
       .json({ error: "Tutti i campi obbligatori mancanti" });
   }
 
+  // Parsa il formato "8x100, 8x100, 6x105"
+  const serieArray = serie_input.split(",").map((s) => s.trim());
+  const parsed = [];
+
+  for (const serie of serieArray) {
+    const match = serie.match(/^(\d+)[xX](\d+(\.\d+)?)$/);
+    if (!match) {
+      return res.status(400).json({
+        error: `Formato non valido: "${serie}". Usa il formato "8x100" (ripetizioni x peso)`,
+      });
+    }
+    parsed.push({
+      ripetizioni: parseInt(match[1]),
+      peso: parseFloat(match[2]),
+    });
+  }
+
   try {
-    const [result] = await pool.query(
-      `INSERT INTO esercizi_log 
-      (user_id, sessione_id, data, nome_esercizio, serie, ripetizioni, peso, note) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        req.user.id,
-        sessione_id,
-        data,
-        nome_esercizio,
-        serie,
-        ripetizioni,
-        peso,
-        note || null,
-      ],
+    const insertedIds = [];
+
+    for (let i = 0; i < parsed.length; i++) {
+      const { ripetizioni, peso } = parsed[i];
+      const [result] = await pool.query(
+        `INSERT INTO esercizi_log 
+         (user_id, sessione_id, data, nome_esercizio, serie, ripetizioni, peso, note) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          req.user.id,
+          sessione_id,
+          data,
+          nome_esercizio,
+          i + 1,
+          ripetizioni,
+          peso,
+          note || null,
+        ],
+      );
+      insertedIds.push(result.insertId);
+    }
+
+    const [logs] = await pool.query(
+      `SELECT * FROM esercizi_log WHERE id IN (${insertedIds.map(() => "?").join(",")})`,
+      insertedIds,
     );
 
-    const [newLog] = await pool.query(
-      "SELECT * FROM esercizi_log WHERE id = ?",
-      [result.insertId],
-    );
-
-    res.status(201).json({ log: newLog[0] });
+    res.status(201).json({ logs, total: logs.length });
   } catch (err) {
     console.error("Errore createLog:", err);
     res.status(500).json({ error: "Errore interno del server" });
@@ -233,7 +248,7 @@ Sii diretto e tecnico. Rispondi in italiano.`;
           content: prompt,
         },
       ],
-      model: "llama-3.3-70b-versatile",
+      model: "openai/gpt-oss-20b",
       temperature: 0.5,
       max_tokens: 800,
     });

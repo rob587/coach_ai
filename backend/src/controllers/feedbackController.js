@@ -103,7 +103,7 @@ Sii diretto e tecnico. Rispondi in italiano.`;
           content: prompt,
         },
       ],
-      model: "llama-3.3-70b-versatile",
+      model: "openai/gpt-oss-20b",
       temperature: 0.7,
       max_tokens: 1000,
     });

@@ -19,11 +19,10 @@ const LogAllenamento = () => {
   const [loadingSuggerimento, setLoadingSuggerimento] = useState(false);
   const [form, setForm] = useState({
     nome_esercizio: "",
-    serie: "",
-    ripetizioni: "",
-    peso: "",
+    serie_input: "",
     note: "",
   });
+  const [preview, setPreview] = useState([]);
 
   const oggi = new Date().toISOString().split("T")[0];
 
@@ -58,28 +57,49 @@ const LogAllenamento = () => {
     }
   }, [sessioneSelezionata]);
 
+  const parseSerieInput = (input) => {
+    if (!input.trim()) return [];
+    return input.split(",").map((s, i) => {
+      const match = s.trim().match(/^(\d+)[xX](\d+(\.\d+)?)$/);
+      if (!match)
+        return { serie: i + 1, ripetizioni: "?", peso: "?", valido: false };
+      return {
+        serie: i + 1,
+        ripetizioni: parseInt(match[1]),
+        peso: parseFloat(match[2]),
+        valido: true,
+      };
+    });
+  };
+
+  const handleSerieInput = (value) => {
+    setForm({ ...form, serie_input: value });
+    setPreview(parseSerieInput(value));
+  };
+
   const handleCreate = async (e) => {
     e.preventDefault();
     if (!sessioneSelezionata) return;
+
+    const parsed = parseSerieInput(form.serie_input);
+    if (parsed.length === 0) return;
+    if (parsed.some((s) => !s.valido)) {
+      setError("Formato non valido. Usa: 8x100, 8x100, 6x105");
+      return;
+    }
+
     setSubmitting(true);
     try {
       const data = await createLog({
         sessione_id: sessioneSelezionata.id,
         data: oggi,
         nome_esercizio: form.nome_esercizio,
-        serie: parseInt(form.serie),
-        ripetizioni: parseInt(form.ripetizioni),
-        peso: parseFloat(form.peso),
+        serie_input: form.serie_input,
         note: form.note || null,
       });
-      setLogs([...logs, data.log]);
-      setForm({
-        nome_esercizio: "",
-        serie: "",
-        ripetizioni: "",
-        peso: "",
-        note: "",
-      });
+      setLogs([...logs, ...data.logs]);
+      setForm({ nome_esercizio: "", serie_input: "", note: "" });
+      setPreview([]);
       setShowForm(false);
     } catch (err) {
       setError(err.message);
@@ -138,7 +158,6 @@ const LogAllenamento = () => {
 
   return (
     <div className="max-w-3xl mx-auto space-y-4">
-      {/* Selettore sessione */}
       <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
         <h2 className="text-lg font-semibold text-gray-100 mb-4">
           🏋️ Log Allenamento —{" "}
@@ -174,7 +193,6 @@ const LogAllenamento = () => {
 
       {sessioneSelezionata && (
         <>
-          {/* Header sessione + azioni */}
           <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
             <div className="flex items-start justify-between mb-4">
               <div>
@@ -230,57 +248,44 @@ const LogAllenamento = () => {
                     className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-gray-100 text-sm focus:outline-none focus:border-violet-500"
                   />
                 </div>
-                <div className="grid grid-cols-3 gap-3">
-                  <div>
-                    <label className="block text-gray-400 text-sm mb-1">
-                      Serie
-                    </label>
-                    <input
-                      type="number"
-                      value={form.serie}
-                      onChange={(e) =>
-                        setForm({ ...form, serie: e.target.value })
-                      }
-                      placeholder="es. 4"
-                      min="1"
-                      required
-                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-gray-100 text-sm focus:outline-none focus:border-violet-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-gray-400 text-sm mb-1">
-                      Ripetizioni
-                    </label>
-                    <input
-                      type="number"
-                      value={form.ripetizioni}
-                      onChange={(e) =>
-                        setForm({ ...form, ripetizioni: e.target.value })
-                      }
-                      placeholder="es. 8"
-                      min="1"
-                      required
-                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-gray-100 text-sm focus:outline-none focus:border-violet-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-gray-400 text-sm mb-1">
-                      Peso (kg)
-                    </label>
-                    <input
-                      type="number"
-                      value={form.peso}
-                      onChange={(e) =>
-                        setForm({ ...form, peso: e.target.value })
-                      }
-                      placeholder="es. 80"
-                      step="0.5"
-                      min="0"
-                      required
-                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-gray-100 text-sm focus:outline-none focus:border-violet-500"
-                    />
-                  </div>
+
+                <div>
+                  <label className="block text-gray-400 text-sm mb-1">
+                    Serie{" "}
+                    <span className="text-gray-600 font-normal">
+                      — formato: rep x peso, rep x peso
+                    </span>
+                  </label>
+                  <input
+                    type="text"
+                    value={form.serie_input}
+                    onChange={(e) => handleSerieInput(e.target.value)}
+                    placeholder="es. 8x100, 8x100, 6x105, 5x107"
+                    required
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-gray-100 text-sm focus:outline-none focus:border-violet-500 font-mono"
+                  />
                 </div>
+
+                {/* Preview serie parsate */}
+                {preview.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {preview.map((s, i) => (
+                      <div
+                        key={i}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-medium border ${
+                          s.valido
+                            ? "bg-violet-500/10 border-violet-500/40 text-violet-300"
+                            : "bg-red-500/10 border-red-500/40 text-red-400"
+                        }`}
+                      >
+                        {s.valido
+                          ? `Serie ${s.serie}: ${s.ripetizioni} rep × ${s.peso} kg`
+                          : `Serie ${s.serie}: ❌ formato errato`}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-gray-400 text-sm mb-1">
                     Note (opzionale)
@@ -293,12 +298,19 @@ const LogAllenamento = () => {
                     className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-gray-100 text-sm focus:outline-none focus:border-violet-500"
                   />
                 </div>
+
                 <button
                   type="submit"
-                  disabled={submitting}
-                  className="bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white text-sm font-medium px-4 py-2 rounded-lg transition-all"
+                  disabled={
+                    submitting ||
+                    preview.some((s) => !s.valido) ||
+                    preview.length === 0
+                  }
+                  className="bg-violet-600 hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium px-4 py-2 rounded-lg transition-all"
                 >
-                  {submitting ? "Salvataggio..." : "Aggiungi Esercizio"}
+                  {submitting
+                    ? "Salvataggio..."
+                    : `Aggiungi ${preview.length > 0 ? preview.length + " serie" : ""}`}
                 </button>
               </form>
             )}
@@ -329,39 +341,57 @@ const LogAllenamento = () => {
                 <p className="text-sm mt-1">Aggiungi il primo esercizio!</p>
               </div>
             ) : (
-              <div className="space-y-3">
-                {logs.map((log) => (
+              <div className="space-y-4">
+                {Object.entries(
+                  logs.reduce((acc, log) => {
+                    if (!acc[log.nome_esercizio]) acc[log.nome_esercizio] = [];
+                    acc[log.nome_esercizio].push(log);
+                    return acc;
+                  }, {}),
+                ).map(([nome, serie]) => (
                   <div
-                    key={log.id}
-                    className="flex items-center justify-between bg-gray-800/50 border border-gray-700 rounded-xl px-4 py-3"
+                    key={nome}
+                    className="bg-gray-800/50 border border-gray-700 rounded-xl p-4"
                   >
-                    <div>
-                      <span className="text-gray-100 font-medium">
-                        {log.nome_esercizio}
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-gray-100 font-semibold">
+                        {nome}
                       </span>
-                      <div className="flex gap-2 mt-1 flex-wrap">
-                        <span className="bg-gray-700 text-gray-300 text-xs px-2 py-0.5 rounded-full">
-                          {log.serie} serie
-                        </span>
-                        <span className="bg-gray-700 text-gray-300 text-xs px-2 py-0.5 rounded-full">
-                          {log.ripetizioni} rep
-                        </span>
-                        <span className="bg-violet-500/20 text-violet-300 text-xs px-2 py-0.5 rounded-full font-medium">
-                          {log.peso} kg
-                        </span>
-                        {log.note && (
-                          <span className="text-gray-500 text-xs">
-                            — {log.note}
-                          </span>
-                        )}
-                      </div>
+                      <span className="text-gray-500 text-xs">
+                        {serie.length} serie
+                      </span>
                     </div>
-                    <button
-                      onClick={() => handleDelete(log.id)}
-                      className="text-gray-600 hover:text-red-400 hover:bg-red-400/10 p-2 rounded-lg transition-all"
-                    >
-                      🗑
-                    </button>
+                    <div className="space-y-2">
+                      {serie.map((log) => (
+                        <div
+                          key={log.id}
+                          className="flex items-center justify-between"
+                        >
+                          <div className="flex gap-2 items-center">
+                            <span className="text-gray-500 text-xs w-14">
+                              Serie {log.serie}
+                            </span>
+                            <span className="bg-gray-700 text-gray-300 text-xs px-2 py-0.5 rounded-full">
+                              {log.ripetizioni} rep
+                            </span>
+                            <span className="bg-violet-500/20 text-violet-300 text-xs px-2 py-0.5 rounded-full font-medium">
+                              {log.peso} kg
+                            </span>
+                            {log.note && (
+                              <span className="text-gray-500 text-xs">
+                                — {log.note}
+                              </span>
+                            )}
+                          </div>
+                          <button
+                            onClick={() => handleDelete(log.id)}
+                            className="text-gray-600 hover:text-red-400 hover:bg-red-400/10 p-1.5 rounded-lg transition-all text-xs"
+                          >
+                            🗑
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 ))}
               </div>
