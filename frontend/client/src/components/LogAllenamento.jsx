@@ -3,6 +3,7 @@ import {
   getSessioni,
   getLogs,
   createLog,
+  updateLog,
   deleteLog,
   getSuggerimentoCarichi,
 } from "../services/apiService";
@@ -382,35 +383,101 @@ const LogAllenamento = () => {
                       </span>
                     </div>
                     <div className="space-y-2">
-                      {serie.map((log) => (
-                        <div
-                          key={log.id}
-                          className="flex items-center justify-between"
-                        >
-                          <div className="flex gap-2 items-center">
-                            <span className="text-gray-500 text-xs w-14">
-                              Serie {log.serie}
-                            </span>
-                            <span className="bg-gray-700 text-gray-300 text-xs px-2 py-0.5 rounded-full">
-                              {log.ripetizioni} rep
-                            </span>
-                            <span className="bg-violet-500/20 text-violet-300 text-xs px-2 py-0.5 rounded-full font-medium">
-                              {log.peso} kg
-                            </span>
-                            {log.note && (
-                              <span className="text-gray-500 text-xs">
-                                — {log.note}
-                              </span>
+                      {serie
+                        .sort((a, b) => a.serie - b.serie)
+                        .map((log) => (
+                          <div
+                            key={log.id}
+                            className="flex items-center justify-between gap-2"
+                          >
+                            {editingLog === log.id ? (
+                              // Modalità modifica
+                              <div className="flex items-center gap-2 flex-1">
+                                <span className="text-gray-500 text-xs w-14 shrink-0">
+                                  Serie {log.serie}
+                                </span>
+                                <input
+                                  type="number"
+                                  value={editForm.ripetizioni}
+                                  onChange={(e) =>
+                                    setEditForm({
+                                      ...editForm,
+                                      ripetizioni: e.target.value,
+                                    })
+                                  }
+                                  className="w-16 bg-gray-700 border border-violet-500 rounded-lg px-2 py-1 text-gray-100 text-xs focus:outline-none"
+                                  placeholder="rep"
+                                />
+                                <span className="text-gray-500 text-xs">
+                                  rep ×
+                                </span>
+                                <input
+                                  type="number"
+                                  value={editForm.peso}
+                                  onChange={(e) =>
+                                    setEditForm({
+                                      ...editForm,
+                                      peso: e.target.value,
+                                    })
+                                  }
+                                  className="w-20 bg-gray-700 border border-violet-500 rounded-lg px-2 py-1 text-gray-100 text-xs focus:outline-none"
+                                  placeholder="kg"
+                                  step="0.5"
+                                />
+                                <span className="text-gray-500 text-xs">
+                                  kg
+                                </span>
+                                <button
+                                  onClick={() => handleEditSave(log.id)}
+                                  className="bg-violet-600 hover:bg-violet-700 text-white text-xs px-2 py-1 rounded-lg transition-all"
+                                >
+                                  ✓
+                                </button>
+                                <button
+                                  onClick={() => setEditingLog(null)}
+                                  className="bg-gray-700 hover:bg-gray-600 text-gray-300 text-xs px-2 py-1 rounded-lg transition-all"
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                            ) : (
+                              // Modalità visualizzazione
+                              <div className="flex items-center gap-2 flex-1">
+                                <span className="text-gray-500 text-xs w-14 shrink-0">
+                                  Serie {log.serie}
+                                </span>
+                                <span className="bg-gray-700 text-gray-300 text-xs px-2 py-0.5 rounded-full">
+                                  {log.ripetizioni} rep
+                                </span>
+                                <span className="bg-violet-500/20 text-violet-300 text-xs px-2 py-0.5 rounded-full font-medium">
+                                  {log.peso} kg
+                                </span>
+                                {log.note && (
+                                  <span className="text-gray-500 text-xs">
+                                    — {log.note}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+
+                            {editingLog !== log.id && (
+                              <div className="flex gap-1 shrink-0">
+                                <button
+                                  onClick={() => handleEditStart(log)}
+                                  className="text-gray-600 hover:text-violet-400 hover:bg-violet-400/10 p-1.5 rounded-lg transition-all text-xs"
+                                >
+                                  ✏️
+                                </button>
+                                <button
+                                  onClick={() => handleDelete(log.id)}
+                                  className="text-gray-600 hover:text-red-400 hover:bg-red-400/10 p-1.5 rounded-lg transition-all text-xs"
+                                >
+                                  🗑
+                                </button>
+                              </div>
                             )}
                           </div>
-                          <button
-                            onClick={() => handleDelete(log.id)}
-                            className="text-gray-600 hover:text-red-400 hover:bg-red-400/10 p-1.5 rounded-lg transition-all text-xs"
-                          >
-                            🗑
-                          </button>
-                        </div>
-                      ))}
+                        ))}
                     </div>
                   </div>
                 ))}
