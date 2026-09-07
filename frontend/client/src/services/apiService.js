@@ -181,3 +181,31 @@ export const generateFeedback = async () => {
   if (!res.ok) throw new Error(data.error || "Errore generazione feedback");
   return data;
 };
+
+export const getPesiLog = async () => {
+  const res = await fetch(`${BASE_URL}/peso`, { headers: getHeaders() });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Errore fetch peso");
+  return data;
+};
+
+export const createPesoLog = async (peso, data) => {
+  const res = await fetch(`${BASE_URL}/peso`, {
+    method: "POST",
+    headers: getHeaders(),
+    body: JSON.stringify({ peso, data }),
+  });
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.error || "Errore salvataggio peso");
+  return result;
+};
+
+export const deletePesoLog = async (id) => {
+  const res = await fetch(`${BASE_URL}/peso/${id}`, {
+    method: "DELETE",
+    headers: getHeaders(),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Errore eliminazione peso");
+  return data;
+};
