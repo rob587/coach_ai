@@ -23,6 +23,8 @@ const LogAllenamento = () => {
     note: "",
   });
   const [preview, setPreview] = useState([]);
+  const [editingLog, setEditingLog] = useState(null);
+  const [editForm, setEditForm] = useState({ ripetizioni: "", peso: "" });
 
   const oggi = new Date().toISOString().split("T")[0];
 
@@ -105,6 +107,24 @@ const LogAllenamento = () => {
       setError(err.message);
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleEditStart = (log) => {
+    setEditingLog(log.id);
+    setEditForm({ ripetizioni: log.ripetizioni, peso: log.peso });
+  };
+
+  const handleEditSave = async (id) => {
+    try {
+      const data = await updateLog(id, {
+        ripetizioni: parseInt(editForm.ripetizioni),
+        peso: parseFloat(editForm.peso),
+      });
+      setLogs(logs.map((l) => (l.id === id ? data.log : l)));
+      setEditingLog(null);
+    } catch (err) {
+      setError(err.message);
     }
   };
 
