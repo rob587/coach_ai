@@ -15,18 +15,6 @@ import {
   createPesoLog,
   deletePesoLog,
 } from "../services/apiService";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-  AreaChart,
-  Area,
-} from "recharts";
 
 const Dashboard = ({ profile }) => {
   const [esercizi, setEsercizi] = useState([]);
@@ -241,6 +229,121 @@ const Dashboard = ({ profile }) => {
               </div>
             )}
           </>
+        )}
+      </div>
+
+      {/* Andamento peso corporeo */}
+      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+        <h2 className="text-lg font-semibold text-gray-100 mb-4">
+          ⚖️ Peso Corporeo
+        </h2>
+
+        {/* Input nuovo peso */}
+        <div className="flex gap-3 mb-6">
+          <input
+            type="number"
+            value={nuovoPeso}
+            onChange={(e) => setNuovoPeso(e.target.value)}
+            placeholder="es. 80.5"
+            step="0.1"
+            min="30"
+            max="300"
+            className="w-32 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-gray-100 text-sm focus:outline-none focus:border-violet-500"
+          />
+          <span className="text-gray-500 text-sm self-center">kg</span>
+          <input
+            type="date"
+            value={dataPeso}
+            onChange={(e) => setDataPeso(e.target.value)}
+            className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-gray-100 text-sm focus:outline-none focus:border-violet-500"
+          />
+          <button
+            onClick={handleSavePeso}
+            disabled={savingPeso || !nuovoPeso}
+            className="bg-violet-600 hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium px-4 py-2 rounded-lg transition-all"
+          >
+            {savingPeso ? "..." : "Salva"}
+          </button>
+        </div>
+
+        {/* Grafico */}
+        {pesiLog.length < 2 ? (
+          <div className="text-center py-8 text-gray-500">
+            <p>Aggiungi almeno 2 misurazioni per vedere il grafico.</p>
+          </div>
+        ) : (
+          <div style={{ height: "220px" }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={pesiLog}>
+                <defs>
+                  <linearGradient id="pesoGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#a78bfa" stopOpacity={0.2} />
+                    <stop offset="95%" stopColor="#a78bfa" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="rgba(255,255,255,0.05)"
+                />
+                <XAxis
+                  dataKey="data"
+                  tick={{ fill: "#6b7280", fontSize: 12 }}
+                  tickFormatter={(val) => val.slice(5)}
+                />
+                <YAxis
+                  tick={{ fill: "#6b7280", fontSize: 12 }}
+                  domain={["auto", "auto"]}
+                />
+                <Tooltip
+                  contentStyle={{
+                    background: "#1e2130",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    borderRadius: "8px",
+                    color: "#f3f4f6",
+                  }}
+                  formatter={(val) => [`${val} kg`, "Peso"]}
+                  labelFormatter={(label) => `Data: ${label}`}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="peso"
+                  stroke="#a78bfa"
+                  strokeWidth={2}
+                  fill="url(#pesoGradient)"
+                  dot={{ fill: "#a78bfa", r: 4 }}
+                  name="Peso (kg)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+
+        {/* Lista ultime misurazioni */}
+        {pesiLog.length > 0 && (
+          <div className="mt-4 space-y-2 max-h-40 overflow-y-auto">
+            {[...pesiLog]
+              .reverse()
+              .slice(0, 5)
+              .map((log) => (
+                <div
+                  key={log.id}
+                  className="flex items-center justify-between bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-gray-500 text-xs">{log.data}</span>
+                    <span className="text-violet-300 font-semibold text-sm">
+                      {log.peso} kg
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => handleDeletePeso(log.id)}
+                    className="text-gray-600 hover:text-red-400 hover:bg-red-400/10 p-1.5 rounded-lg transition-all text-xs"
+                  >
+                    🗑
+                  </button>
+                </div>
+              ))}
+          </div>
         )}
       </div>
 
