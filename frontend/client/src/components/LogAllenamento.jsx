@@ -57,10 +57,12 @@ const LogAllenamento = () => {
     }
   };
 
-  const loadLogs = async (sessione_id) => {
+  const loadLogs = async (sessione_id, data = dataSelezionata) => {
+    console.log("loadLogs chiamato:", { sessione_id, data });
     try {
-      const data = await getLogs({ sessione_id, data: dataSelezionata });
-      setLogs(data.logs);
+      const result = await getLogs({ sessione_id, data });
+      console.log("logs ricevuti:", result.logs);
+      setLogs(result.logs);
     } catch (err) {
       setError(err.message);
     }
@@ -72,7 +74,7 @@ const LogAllenamento = () => {
 
   useEffect(() => {
     if (sessioneSelezionata) {
-      loadLogs(sessioneSelezionata.id);
+      loadLogs(sessioneSelezionata.id, dataSelezionata);
     }
   }, [sessioneSelezionata, dataSelezionata]);
 
@@ -81,6 +83,7 @@ const LogAllenamento = () => {
       loadDateSessione(sessioneSelezionata.id);
     }
   }, [sessioneSelezionata]);
+
   const parseSerieInput = (input) => {
     if (!input.trim()) return [];
     return input.split(",").map((s, i) => {
@@ -234,6 +237,45 @@ const LogAllenamento = () => {
           </div>
         )}
       </div>
+      {dateSessione.length > 0 && (
+        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+          <h3 className="text-sm font-medium text-gray-400 mb-3">
+            📅 Sessioni precedenti
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {dateSessione.map((data) => (
+              <button
+                key={data}
+                onClick={() => setDataSelezionata(data)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+                  dataSelezionata === data
+                    ? "bg-violet-500/20 border-violet-500 text-violet-300"
+                    : "bg-gray-800 border-gray-700 text-gray-400 hover:border-gray-600"
+                }`}
+              >
+                {new Date(data).toLocaleDateString("it-IT", {
+                  weekday: "short",
+                  day: "2-digit",
+                  month: "short",
+                  timeZone: "UTC",
+                })}
+              </button>
+            ))}
+            <button
+              onClick={() =>
+                setDataSelezionata(new Date().toISOString().split("T")[0])
+              }
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+                dataSelezionata === new Date().toISOString().split("T")[0]
+                  ? "bg-violet-500/20 border-violet-500 text-violet-300"
+                  : "bg-gray-800 border-gray-700 text-gray-400 hover:border-gray-600"
+              }`}
+            >
+              Oggi
+            </button>
+          </div>
+        </div>
+      )}
 
       {sessioneSelezionata && (
         <>
