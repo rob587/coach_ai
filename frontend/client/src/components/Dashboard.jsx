@@ -81,7 +81,12 @@ const Dashboard = ({ profile }) => {
   const loadPesiLog = async () => {
     try {
       const data = await getPesiLog();
-      setPesiLog(data.logs);
+      setPesiLog(
+        data.logs.map((l) => ({
+          ...l,
+          data: l.data.split("T")[0],
+        })),
+      );
     } catch (err) {
       console.error(err);
     }
@@ -94,9 +99,10 @@ const Dashboard = ({ profile }) => {
       const data = await createPesoLog(parseFloat(nuovoPeso), dataPeso);
       setPesiLog((prev) => {
         const filtered = prev.filter((l) => l.data !== dataPeso);
-        return [...filtered, data.log].sort(
-          (a, b) => new Date(a.data) - new Date(b.data),
-        );
+        return [
+          ...filtered,
+          { ...data.log, data: data.log.data.split("T")[0] },
+        ].sort((a, b) => new Date(a.data) - new Date(b.data));
       });
       setNuovoPeso("");
     } catch (err) {
@@ -119,6 +125,14 @@ const Dashboard = ({ profile }) => {
     if (!profile?.peso || !profile?.altezza) return null;
     const altezzaM = profile.altezza / 100;
     return (profile.peso / (altezzaM * altezzaM)).toFixed(1);
+  };
+
+  const formatData = (dateString) => {
+    return new Date(dateString).toLocaleDateString("it-IT", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
   };
 
   if (loading)

@@ -26,8 +26,9 @@ const LogAllenamento = () => {
   const [preview, setPreview] = useState([]);
   const [editingLog, setEditingLog] = useState(null);
   const [editForm, setEditForm] = useState({ ripetizioni: "", peso: "" });
-
-  const oggi = new Date().toISOString().split("T")[0];
+  const [dataSelezionata, setDataSelezionata] = useState(
+    new Date().toISOString().split("T")[0],
+  );
 
   const loadSessioni = async () => {
     try {
@@ -43,7 +44,7 @@ const LogAllenamento = () => {
 
   const loadLogs = async (sessione_id) => {
     try {
-      const data = await getLogs({ sessione_id, data: oggi });
+      const data = await getLogs({ sessione_id, data: dataSelezionata });
       setLogs(data.logs);
     } catch (err) {
       setError(err.message);
@@ -55,10 +56,8 @@ const LogAllenamento = () => {
   }, []);
 
   useEffect(() => {
-    if (sessioneSelezionata) {
-      loadLogs(sessioneSelezionata.id);
-    }
-  }, [sessioneSelezionata]);
+    if (sessioneSelezionata) loadLogs(sessioneSelezionata.id);
+  }, [sessioneSelezionata, dataSelezionata]);
 
   const parseSerieInput = (input) => {
     if (!input.trim()) return [];
@@ -95,7 +94,7 @@ const LogAllenamento = () => {
     try {
       const data = await createLog({
         sessione_id: sessioneSelezionata.id,
-        data: oggi,
+        data: dataSelezionata,
         nome_esercizio: form.nome_esercizio,
         serie_input: form.serie_input,
         note: form.note || null,
@@ -181,8 +180,10 @@ const LogAllenamento = () => {
     <div className="max-w-3xl mx-auto space-y-4">
       <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
         <h2 className="text-lg font-semibold text-gray-100 mb-4">
-          🏋️ Log Allenamento —{" "}
-          <span className="text-gray-400 font-normal text-sm">{oggi}</span>
+          Log Allenamento —{" "}
+          <span className="text-gray-400 font-normal text-sm">
+            {dataSelezionata}
+          </span>
         </h2>
 
         {sessioni.length === 0 ? (
@@ -215,30 +216,30 @@ const LogAllenamento = () => {
       {sessioneSelezionata && (
         <>
           <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h3 className="text-violet-400 font-semibold text-lg">
-                  {sessioneSelezionata.nome}
-                </h3>
-                <p className="text-gray-500 text-sm mt-1">
-                  {sessioneSelezionata.gruppi_muscolari}
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={handleSuggerimento}
-                  disabled={loadingSuggerimento}
-                  className="bg-gray-800 hover:bg-gray-700 disabled:opacity-50 border border-gray-700 text-gray-300 text-sm px-3 py-2 rounded-lg transition-all"
-                >
-                  {loadingSuggerimento ? "⏳ Analisi..." : "🤖 Suggerimento AI"}
-                </button>
-                <button
-                  onClick={() => setShowForm(!showForm)}
-                  className="bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium px-3 py-2 rounded-lg transition-all"
-                >
-                  {showForm ? "✕ Annulla" : "+ Esercizio"}
-                </button>
-              </div>
+            <div className="flex items-center gap-3">
+              <input
+                type="date"
+                value={dataSelezionata}
+                max={new Date().toISOString().split("T")[0]}
+                onChange={(e) => {
+                  setDataSelezionata(e.target.value);
+                  setSuggerimento(null);
+                }}
+                className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-gray-300 text-sm focus:outline-none focus:border-violet-500"
+              />
+              <button
+                onClick={handleSuggerimento}
+                disabled={loadingSuggerimento}
+                className="bg-gray-800 hover:bg-gray-700 disabled:opacity-50 border border-gray-700 text-gray-300 text-sm px-3 py-2 rounded-lg transition-all"
+              >
+                {loadingSuggerimento ? "⏳ Analisi..." : "🤖 Suggerimento AI"}
+              </button>
+              <button
+                onClick={() => setShowForm(!showForm)}
+                className="bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium px-3 py-2 rounded-lg transition-all"
+              >
+                {showForm ? "✕ Annulla" : "+ Esercizio"}
+              </button>
             </div>
 
             {error && (
