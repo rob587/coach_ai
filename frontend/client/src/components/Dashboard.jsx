@@ -10,6 +10,23 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
+import {
+  getPesiLog,
+  createPesoLog,
+  deletePesoLog,
+} from "../services/apiService";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+  AreaChart,
+  Area,
+} from "recharts";
 
 const Dashboard = ({ profile }) => {
   const [esercizi, setEsercizi] = useState([]);
@@ -18,6 +35,12 @@ const Dashboard = ({ profile }) => {
   const [recentLogs, setRecentLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingChart, setLoadingChart] = useState(false);
+  const [pesiLog, setPesiLog] = useState([]);
+  const [nuovoPeso, setNuovoPeso] = useState("");
+  const [dataPeso, setDataPeso] = useState(
+    new Date().toISOString().split("T")[0],
+  );
+  const [savingPeso, setSavingPeso] = useState(false);
 
   const loadRecentLogs = async () => {
     try {
@@ -62,6 +85,47 @@ const Dashboard = ({ profile }) => {
       loadChartData(esercizioSelezionato);
     }
   }, [esercizioSelezionato]);
+
+  useEffect(() => {
+    loadPesiLog();
+  }, []);
+
+  const loadPesiLog = async () => {
+    try {
+      const data = await getPesiLog();
+      setPesiLog(data.logs);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleSavePeso = async () => {
+    if (!nuovoPeso) return;
+    setSavingPeso(true);
+    try {
+      const data = await createPesoLog(parseFloat(nuovoPeso), dataPeso);
+      setPesiLog((prev) => {
+        const filtered = prev.filter((l) => l.data !== dataPeso);
+        return [...filtered, data.log].sort(
+          (a, b) => new Date(a.data) - new Date(b.data),
+        );
+      });
+      setNuovoPeso("");
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSavingPeso(false);
+    }
+  };
+
+  const handleDeletePeso = async (id) => {
+    try {
+      await deletePesoLog(id);
+      setPesiLog((prev) => prev.filter((l) => l.id !== id));
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const getBMI = () => {
     if (!profile?.peso || !profile?.altezza) return null;
