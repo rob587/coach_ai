@@ -210,7 +210,12 @@ const Dashboard = ({ profile }) => {
                     <XAxis
                       dataKey="data"
                       tick={{ fill: "#6b7280", fontSize: 12 }}
-                      tickFormatter={(val) => val.slice(5)}
+                      tickFormatter={(val) =>
+                        new Date(val).toLocaleDateString("it-IT", {
+                          day: "2-digit",
+                          month: "2-digit",
+                        })
+                      }
                     />
                     <YAxis tick={{ fill: "#6b7280", fontSize: 12 }} />
                     <Tooltip
@@ -220,6 +225,14 @@ const Dashboard = ({ profile }) => {
                         borderRadius: "8px",
                         color: "#f3f4f6",
                       }}
+                      formatter={(val) => [`${val} kg`, "Peso"]}
+                      labelFormatter={(label) =>
+                        new Date(label).toLocaleDateString("it-IT", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })
+                      }
                     />
                     <Legend />
                     <Line
@@ -344,7 +357,9 @@ const Dashboard = ({ profile }) => {
                   className="flex items-center justify-between bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="text-gray-500 text-xs">{log.data}</span>
+                    <span className="text-gray-500 text-xs">
+                      {formatData(log.data)}
+                    </span>
                     <span className="text-violet-300 font-semibold text-sm">
                       {log.peso} kg
                     </span>
@@ -391,7 +406,9 @@ const Dashboard = ({ profile }) => {
                     <span className="bg-violet-500/20 text-violet-300 text-xs px-2 py-0.5 rounded-full font-medium">
                       {log.peso} kg
                     </span>
-                    <span className="text-gray-500 text-xs">{log.data}</span>
+                    <span className="text-gray-500 text-xs">
+                      {formatData(log.data)}
+                    </span>
                   </div>
                 </div>
               </div>
