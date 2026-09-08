@@ -29,6 +29,21 @@ const LogAllenamento = () => {
   const [dataSelezionata, setDataSelezionata] = useState(
     new Date().toISOString().split("T")[0],
   );
+  const [dateSessione, setDateSessione] = useState([]);
+
+  const loadDateSessione = async (sessione_id) => {
+    try {
+      const data = await getLogs({ sessione_id });
+      const dateUniche = [
+        ...new Set(data.logs.map((l) => l.data.split("T")[0])),
+      ]
+        .sort((a, b) => new Date(b) - new Date(a))
+        .slice(0, 8);
+      setDateSessione(dateUniche);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const loadSessioni = async () => {
     try {
@@ -56,9 +71,16 @@ const LogAllenamento = () => {
   }, []);
 
   useEffect(() => {
-    if (sessioneSelezionata) loadLogs(sessioneSelezionata.id);
+    if (sessioneSelezionata) {
+      loadLogs(sessioneSelezionata.id);
+    }
   }, [sessioneSelezionata, dataSelezionata]);
 
+  useEffect(() => {
+    if (sessioneSelezionata) {
+      loadDateSessione(sessioneSelezionata.id);
+    }
+  }, [sessioneSelezionata]);
   const parseSerieInput = (input) => {
     if (!input.trim()) return [];
     return input.split(",").map((s, i) => {
