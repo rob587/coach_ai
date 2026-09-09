@@ -38,6 +38,7 @@ const LogAllenamento = () => {
   const [template, setTemplate] = useState([]);
   const [hasTemplate, setHasTemplate] = useState(false);
   const [savingTemplate, setSavingTemplate] = useState(false);
+  const [templateIndex, setTemplateIndex] = useState(0);
 
   const loadDateSessione = async (sessione_id) => {
     try {
@@ -83,9 +84,10 @@ const LogAllenamento = () => {
   useEffect(() => {
     if (sessioneSelezionata) {
       loadLogs(sessioneSelezionata.id, dataSelezionata);
+      loadDateSessione(sessioneSelezionata.id);
+      loadTemplate(sessioneSelezionata.id);
     }
-  }, [sessioneSelezionata, dataSelezionata]);
-
+  }, [sessioneSelezionata]);
   useEffect(() => {
     if (sessioneSelezionata) {
       loadDateSessione(sessioneSelezionata.id);
