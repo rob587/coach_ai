@@ -209,3 +209,34 @@ export const deletePesoLog = async (id) => {
   if (!res.ok) throw new Error(data.error || "Errore eliminazione peso");
   return data;
 };
+
+// TEMPLATES
+export const getTemplate = async (sessione_id) => {
+  const res = await fetch(`${BASE_URL}/templates/${sessione_id}`, {
+    headers: getHeaders(),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Errore fetch template");
+  return data;
+};
+
+export const saveTemplate = async (sessione_id, esercizi) => {
+  const res = await fetch(`${BASE_URL}/templates`, {
+    method: "POST",
+    headers: getHeaders(),
+    body: JSON.stringify({ sessione_id, esercizi }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Errore salvataggio template");
+  return data;
+};
+
+export const deleteTemplate = async (sessione_id) => {
+  const res = await fetch(`${BASE_URL}/templates/${sessione_id}`, {
+    method: "DELETE",
+    headers: getHeaders(),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Errore eliminazione template");
+  return data;
+};
