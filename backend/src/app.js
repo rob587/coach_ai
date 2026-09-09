@@ -7,6 +7,7 @@ import sessioneRoutes from "./routes/sessioneRoutes.js";
 import logRoutes from "./routes/logRoutes.js";
 import feedbackRoutes from "./routes/feedbackRoutes.js";
 import pesoRoutes from "./routes/pesoRoutes.js";
+import templateRoutes from "./routes/templateRoutes.js";
 
 dotenv.config();
 
@@ -29,6 +30,7 @@ app.use("/api/sessioni", sessioneRoutes);
 app.use("/api/logs", logRoutes);
 app.use("/api/feedback", feedbackRoutes);
 app.use("/api/peso", pesoRoutes);
+app.use("/api/templates", templateRoutes);
 
 app.get("/", (req, res) => {
   res.json({ message: "CoachAI API funzionante" });
