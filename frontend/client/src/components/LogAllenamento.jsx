@@ -7,6 +7,11 @@ import {
   deleteLog,
   getSuggerimentoCarichi,
 } from "../services/apiService";
+import {
+  getTemplate,
+  saveTemplate,
+  deleteTemplate,
+} from "../services/apiService";
 
 const LogAllenamento = () => {
   const [sessioni, setSessioni] = useState([]);
@@ -30,6 +35,9 @@ const LogAllenamento = () => {
     new Date().toISOString().split("T")[0],
   );
   const [dateSessione, setDateSessione] = useState([]);
+  const [template, setTemplate] = useState([]);
+  const [hasTemplate, setHasTemplate] = useState(false);
+  const [savingTemplate, setSavingTemplate] = useState(false);
 
   const loadDateSessione = async (sessione_id) => {
     try {
@@ -174,6 +182,56 @@ const LogAllenamento = () => {
     } finally {
       setLoadingSuggerimento(false);
     }
+  };
+
+  const loadTemplate = async (sessione_id) => {
+    try {
+      const data = await getTemplate(sessione_id);
+      setTemplate(data.templates);
+      setHasTemplate(data.templates.length > 0);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleSaveTemplate = async () => {
+    if (logs.length === 0) {
+      setError("Nessun esercizio da salvare come template");
+      return;
+    }
+    setSavingTemplate(true);
+    try {
+      const esercizi = Object.keys(
+        logs.reduce((acc, log) => {
+          acc[log.nome_esercizio] = true;
+          return acc;
+        }, {}),
+      ).map((nome, i) => ({
+        nome_esercizio: nome,
+        serie_default: "",
+        ordine: i,
+      }));
+
+      await saveTemplate(sessioneSelezionata.id, esercizi);
+      setHasTemplate(true);
+      alert("Template salvato!");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSavingTemplate(false);
+    }
+  };
+
+  const handleLoadTemplate = () => {
+    if (template.length === 0) return;
+
+    setShowForm(true);
+    setTemplateIndex(0);
+    setForm({
+      nome_esercizio: template[0].nome_esercizio,
+      serie_input: "",
+      note: "",
+    });
   };
 
   const renderSuggerimento = (text) => {
