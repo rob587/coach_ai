@@ -88,6 +88,7 @@ const LogAllenamento = () => {
       loadTemplate(sessioneSelezionata.id);
     }
   }, [sessioneSelezionata]);
+
   useEffect(() => {
     if (sessioneSelezionata) {
       loadDateSessione(sessioneSelezionata.id);
@@ -297,10 +298,11 @@ const LogAllenamento = () => {
           </div>
         )}
       </div>
+
       {dateSessione.length > 0 && (
         <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
           <h3 className="text-sm font-medium text-gray-400 mb-3">
-            📅 Sessioni precedenti
+            Sessioni precedenti
           </h3>
           <div className="flex flex-wrap gap-2">
             {dateSessione.map((data) => (
@@ -340,30 +342,55 @@ const LogAllenamento = () => {
       {sessioneSelezionata && (
         <>
           <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
-            <div className="flex items-center gap-3">
-              <input
-                type="date"
-                value={dataSelezionata}
-                max={new Date().toISOString().split("T")[0]}
-                onChange={(e) => {
-                  setDataSelezionata(e.target.value);
-                  setSuggerimento(null);
-                }}
-                className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-gray-300 text-sm focus:outline-none focus:border-violet-500"
-              />
-              <button
-                onClick={handleSuggerimento}
-                disabled={loadingSuggerimento}
-                className="bg-gray-800 hover:bg-gray-700 disabled:opacity-50 border border-gray-700 text-gray-300 text-sm px-3 py-2 rounded-lg transition-all"
-              >
-                {loadingSuggerimento ? "⏳ Analisi..." : "🤖 Suggerimento AI"}
-              </button>
-              <button
-                onClick={() => setShowForm(!showForm)}
-                className="bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium px-3 py-2 rounded-lg transition-all"
-              >
-                {showForm ? "✕ Annulla" : "+ Esercizio"}
-              </button>
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <h3 className="text-violet-400 font-semibold text-lg">
+                  {sessioneSelezionata.nome}
+                </h3>
+                <p className="text-gray-500 text-sm mt-1">
+                  {sessioneSelezionata.gruppi_muscolari}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap justify-end">
+                <input
+                  type="date"
+                  value={dataSelezionata}
+                  max={new Date().toISOString().split("T")[0]}
+                  onChange={(e) => {
+                    setDataSelezionata(e.target.value);
+                    setSuggerimento(null);
+                  }}
+                  className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-gray-300 text-sm focus:outline-none focus:border-violet-500"
+                />
+                {hasTemplate && (
+                  <button
+                    onClick={handleLoadTemplate}
+                    className="bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-emerald-400 text-sm px-3 py-2 rounded-lg transition-all"
+                  >
+                    📋 Carica Template
+                  </button>
+                )}
+                <button
+                  onClick={handleSaveTemplate}
+                  disabled={savingTemplate || logs.length === 0}
+                  className="bg-gray-800 hover:bg-gray-700 disabled:opacity-50 border border-gray-700 text-gray-300 text-sm px-3 py-2 rounded-lg transition-all"
+                >
+                  {savingTemplate ? "..." : "💾 Salva Template"}
+                </button>
+                <button
+                  onClick={handleSuggerimento}
+                  disabled={loadingSuggerimento}
+                  className="bg-gray-800 hover:bg-gray-700 disabled:opacity-50 border border-gray-700 text-gray-300 text-sm px-3 py-2 rounded-lg transition-all"
+                >
+                  {loadingSuggerimento ? "⏳ Analisi..." : "🤖 Suggerimento AI"}
+                </button>
+                <button
+                  onClick={() => setShowForm(!showForm)}
+                  className="bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium px-3 py-2 rounded-lg transition-all"
+                >
+                  {showForm ? "✕ Annulla" : "+ Esercizio"}
+                </button>
+              </div>
             </div>
 
             {error && (
@@ -393,6 +420,29 @@ const LogAllenamento = () => {
                     autoFocus
                     className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-gray-100 text-sm focus:outline-none focus:border-violet-500"
                   />
+
+                  {template.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      <span className="text-gray-500 text-xs self-center">
+                        Template:
+                      </span>
+                      {template.map((t, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() =>
+                            setForm({
+                              ...form,
+                              nome_esercizio: t.nome_esercizio,
+                            })
+                          }
+                          className="bg-emerald-600/20 border border-emerald-500/40 text-emerald-400 text-xs px-2 py-1 rounded-lg hover:bg-emerald-600/30 transition-all"
+                        >
+                          {t.nome_esercizio}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div>
@@ -412,7 +462,6 @@ const LogAllenamento = () => {
                   />
                 </div>
 
-                {/* Preview serie parsate */}
                 {preview.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {preview.map((s, i) => (
@@ -462,20 +511,18 @@ const LogAllenamento = () => {
             )}
           </div>
 
-          {/* Suggerimento AI */}
           {suggerimento && (
             <div className="bg-violet-950/30 border border-violet-500/30 rounded-2xl p-6">
               <h3 className="text-violet-400 font-semibold mb-3">
-                🤖 Suggerimento Carichi
+                Suggerimento Carichi
               </h3>
               <div>{renderSuggerimento(suggerimento)}</div>
             </div>
           )}
 
-          {/* Lista esercizi */}
           <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
             <h3 className="font-semibold text-gray-100 mb-4">
-              Esercizi di oggi{" "}
+              Esercizi{" "}
               <span className="text-gray-500 font-normal text-sm">
                 ({logs.length})
               </span>
@@ -483,7 +530,7 @@ const LogAllenamento = () => {
 
             {logs.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
-                <p>🎯 Nessun esercizio loggato oggi.</p>
+                <p>🎯 Nessun esercizio loggato.</p>
                 <p className="text-sm mt-1">Aggiungi il primo esercizio!</p>
               </div>
             ) : (
@@ -516,7 +563,6 @@ const LogAllenamento = () => {
                             className="flex items-center justify-between gap-2"
                           >
                             {editingLog === log.id ? (
-                              // Modalità modifica
                               <div className="flex items-center gap-2 flex-1">
                                 <span className="text-gray-500 text-xs w-14 shrink-0">
                                   Serie {log.serie}
@@ -566,7 +612,6 @@ const LogAllenamento = () => {
                                 </button>
                               </div>
                             ) : (
-                              // Modalità visualizzazione
                               <div className="flex items-center gap-2 flex-1">
                                 <span className="text-gray-500 text-xs w-14 shrink-0">
                                   Serie {log.serie}
